@@ -48,25 +48,44 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
 
     try {
       setIsPlaying(true)
-      const voiceSynthesis = createVoiceSynthesis()
 
-      if ('synthesizeScript' in voiceSynthesis) {
-        // ElevenLabs API
-        const audioBuffer = await voiceSynthesis.previewVoice(voiceId)
-        const audioUrl = voiceSynthesis.createAudioUrl(audioBuffer)
+      // Try server-side ElevenLabs API first
+      const response = await fetch('/api/voice/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voiceId })
+      })
+
+      if (response.ok) {
+        // ElevenLabs API succeeded
+        const audioBlob = await response.blob()
+        const audioUrl = URL.createObjectURL(audioBlob)
         const audio = new Audio(audioUrl)
+
         audio.play()
         audio.onended = () => {
           setIsPlaying(false)
-          voiceSynthesis.revokeAudioUrl(audioUrl)
+          URL.revokeObjectURL(audioUrl)
+        }
+        audio.onerror = () => {
+          setIsPlaying(false)
+          URL.revokeObjectURL(audioUrl)
         }
       } else {
-        // Fallback browser TTS
+        // Fallback to browser TTS
+        const voiceSynthesis = createVoiceSynthesis()
         await voiceSynthesis.previewVoice(voiceId)
         setIsPlaying(false)
       }
     } catch (error) {
       console.error('Voice preview failed:', error)
+      // Fallback to browser TTS
+      try {
+        const voiceSynthesis = createVoiceSynthesis()
+        await voiceSynthesis.previewVoice(voiceId)
+      } catch (fallbackError) {
+        console.error('Fallback TTS also failed:', fallbackError)
+      }
       setIsPlaying(false)
     }
   }
