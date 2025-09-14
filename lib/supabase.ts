@@ -1,15 +1,22 @@
-import { createClient } from '@supabase/supabase-js'
+// DEPRECATED: Supabase is no longer used - we've switched to Vercel Postgres
+// This file is kept for legacy compatibility but is not functional
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+console.warn('Supabase client is deprecated - using Vercel Postgres with custom auth')
 
-// Log configuration for debugging
-console.log('Supabase Config:', {
-  url: supabaseUrl.substring(0, 30) + '...',
-  hasKey: !!supabaseAnonKey && supabaseAnonKey !== 'placeholder-key'
-})
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = {
+  auth: {
+    signUp: () => Promise.reject(new Error('Supabase deprecated')),
+    signIn: () => Promise.reject(new Error('Supabase deprecated')),
+    signOut: () => Promise.reject(new Error('Supabase deprecated')),
+    onAuthStateChange: () => () => {},
+  },
+  from: () => ({
+    select: () => Promise.reject(new Error('Supabase deprecated')),
+    insert: () => Promise.reject(new Error('Supabase deprecated')),
+    update: () => Promise.reject(new Error('Supabase deprecated')),
+    delete: () => Promise.reject(new Error('Supabase deprecated')),
+  })
+}
 
 export type Database = {
   public: {

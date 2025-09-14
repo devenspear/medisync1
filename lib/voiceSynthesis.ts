@@ -14,27 +14,27 @@ export class VoiceSynthesis {
   private apiKey: string
   private baseUrl = 'https://api.elevenlabs.io/v1'
 
-  // Available voices with their IDs (these are example IDs - replace with actual ElevenLabs voice IDs)
+  // Available voices with their IDs
   private voices = {
     'female-1': {
-      id: 'EXAVITQu4vr4xnSDxMaL', // Bella - calm female voice
-      name: 'Bella',
-      description: 'Calm, soothing female voice'
+      id: 'm24gZfUicC3ekOb7OZfy', // Kelli-1 - your custom meditation voice
+      name: 'Kelli',
+      description: '50-year-old female, extremely pleasing and comforting for deep guided meditation'
     },
     'female-2': {
-      id: 'AZnzlk1XvdvUeBnXmlld', // Domi - gentle female voice
-      name: 'Domi',
-      description: 'Gentle, nurturing female voice'
+      id: 'EXAVITQu4vr4xnSDxMaL', // Sarah - professional, warm, confident
+      name: 'Sarah',
+      description: 'Young adult woman with confident, warm, and reassuring professional tone'
     },
     'male-1': {
-      id: 'VR6AewLTigWG4xSOukaG', // Arnold - warm male voice
-      name: 'Arnold',
-      description: 'Warm, reassuring male voice'
+      id: 'GBv7mTt0atIp3Br8iCZE', // Thomas - perfect for meditation
+      name: 'Thomas',
+      description: 'Soft and subdued male voice, optimal for meditations and narrations'
     },
     'male-2': {
-      id: 'ErXwobaYiN019PkySvjV', // Antoni - calm male voice
-      name: 'Antoni',
-      description: 'Calm, meditative male voice'
+      id: 'JBFqnCBsd6RMkjVDRZzb', // George - warm British voice
+      name: 'George',
+      description: 'Warm British resonance with mature, captivating quality'
     }
   }
 

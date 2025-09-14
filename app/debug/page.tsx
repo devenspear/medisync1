@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+// import { supabase } from '@/lib/supabase' // Removed - using Vercel Postgres now
 import { isDemoMode } from '@/lib/demoMode'
 
 export default function DebugPage() {

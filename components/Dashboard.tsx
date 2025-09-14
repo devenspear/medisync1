@@ -38,95 +38,104 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen w-full">
-      {/* Demo Mode Banner */}
-      {isDemoMode() && (
-        <div className="mx-4 mt-4 mb-6 bg-orange-500/10 border border-orange-500/30 rounded-2xl p-4">
-          <div className="flex items-start space-x-3">
-            <span className="text-orange-400 text-lg mt-0.5">⚡</span>
-            <div>
-              <p className="text-orange-100 font-medium mb-1">Demo Mode</p>
-              <p className="text-orange-200/80 text-sm leading-relaxed">
-                You're experiencing MediSync with sample data. Add API keys to enable full functionality.
-              </p>
+    <div className="ios-page">
+      <div className="ios-safe-content">
+        {/* Demo Mode Banner */}
+        {isDemoMode() && (
+          <div className="ios-section">
+            <div className="ios-full-width-card bg-orange-500/10 border border-orange-500/30 ios-padding-md">
+              <div className="flex items-start space-x-3">
+                <span className="text-orange-400 text-lg mt-0.5">⚡</span>
+                <div>
+                  <p className="ios-headline text-orange-100 mb-1">Demo Mode</p>
+                  <p className="ios-subhead text-orange-200/80 leading-relaxed">
+                    You're experiencing MediSync with sample data. Add API keys to enable full functionality.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Header */}
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1">Good Evening</h1>
-            <p className="text-gray-400 text-sm">{user?.email}</p>
+        {/* Header */}
+        <div className="ios-section">
+          <div className="flex items-center justify-between ios-content-inset">
+            <div>
+              <h1 className="ios-title-2 mb-1" style={{color: 'var(--ios-label)'}}>Good Evening</h1>
+              <p className="ios-subhead" style={{color: 'var(--ios-label-secondary)'}}>{user?.email}</p>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="w-11 h-11 ios-background-secondary rounded-full flex items-center justify-center no-select"
+              style={{color: 'var(--ios-label-secondary)'}}
+            >
+              <span className="text-lg">⚙️</span>
+            </button>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="w-9 h-9 bg-gray-800/50 rounded-full flex items-center justify-center text-gray-400 no-select"
-          >
-            <span className="text-lg">⚙️</span>
-          </button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          <div className="ios-card text-center py-4">
-            <p className="text-2xl font-bold text-blue-400 mb-1">{user?.total_minutes || 0}</p>
-            <p className="text-xs text-gray-400 uppercase tracking-wide">Minutes</p>
-          </div>
-          <div className="ios-card text-center py-4">
-            <p className="text-2xl font-bold text-green-400 mb-1">{user?.current_streak || 0}</p>
-            <p className="text-xs text-gray-400 uppercase tracking-wide">Day Streak</p>
-          </div>
-          <div className="ios-card text-center py-4">
-            <p className="text-2xl font-bold text-purple-400 mb-1">{savedSessions.length}</p>
-            <p className="text-xs text-gray-400 uppercase tracking-wide">Sessions</p>
+        <div className="ios-section">
+          <div className="grid grid-cols-3 gap-3 ios-content-inset">
+            <div className="ios-card text-center ios-padding-md">
+              <p className="ios-title-2 font-bold text-blue-400 mb-1">{user?.total_minutes || 0}</p>
+              <p className="ios-caption uppercase tracking-wide" style={{color: 'var(--ios-label-secondary)'}}>Minutes</p>
+            </div>
+            <div className="ios-card text-center ios-padding-md">
+              <p className="ios-title-2 font-bold text-green-400 mb-1">{user?.current_streak || 0}</p>
+              <p className="ios-caption uppercase tracking-wide" style={{color: 'var(--ios-label-secondary)'}}>Day Streak</p>
+            </div>
+            <div className="ios-card text-center ios-padding-md">
+              <p className="ios-title-2 font-bold text-purple-400 mb-1">{savedSessions.length}</p>
+              <p className="ios-caption uppercase tracking-wide" style={{color: 'var(--ios-label-secondary)'}}>Sessions</p>
+            </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="space-y-4 mb-8">
-          <button
-            onClick={() => setShowAssessment(true)}
-            className="w-full p-6 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl text-left no-select active:scale-[0.98] transition-transform"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xl font-bold text-white">Start New Session</h3>
-              <span className="text-2xl">✨</span>
-            </div>
-            <p className="text-blue-100 text-sm leading-relaxed">
-              Create a personalized meditation with AI guidance
-            </p>
-          </button>
+        <div className="ios-section">
+          <div className="space-y-4 ios-content-inset">
+            <button
+              onClick={() => setShowAssessment(true)}
+              className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-left no-select active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="ios-title-3 text-white">Start New Session</h3>
+                <span className="text-2xl">✨</span>
+              </div>
+              <p className="ios-subhead text-blue-100 leading-relaxed">
+                Create a personalized meditation with AI guidance
+              </p>
+            </button>
 
-          <button className="w-full ios-card text-left p-6 no-select active:scale-[0.98] transition-transform">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold text-white">Quick Meditation</h3>
-              <span className="text-xl">🧘‍♀️</span>
-            </div>
-            <p className="text-gray-400 text-sm">Use your last configuration</p>
-          </button>
+            <button className="w-full ios-card text-left ios-padding-lg no-select active:scale-[0.98] transition-transform">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="ios-headline" style={{color: 'var(--ios-label)'}}>Quick Meditation</h3>
+                <span className="text-xl">🧘‍♀️</span>
+              </div>
+              <p className="ios-subhead" style={{color: 'var(--ios-label-secondary)'}}>Use your last configuration</p>
+            </button>
+          </div>
         </div>
 
         {/* Saved Sessions */}
         {savedSessions.length > 0 && (
-          <div>
-            <h2 className="text-xl font-bold text-white mb-4">Your Sessions</h2>
-            <div className="space-y-3">
+          <div className="ios-section">
+            <h2 className="ios-section-header ios-content-inset">Your Sessions</h2>
+            <div className="ios-full-width-card ios-list">
               {savedSessions.map((session, index) => (
                 <div
                   key={index}
-                  className="ios-card p-4 no-select"
+                  className="ios-list-item no-select"
                 >
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start justify-between flex-1">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-white mb-1 truncate">{session.name}</h4>
-                      <p className="text-sm text-gray-400">
+                      <h4 className="ios-headline mb-1 truncate" style={{color: 'var(--ios-label)'}}>{session.name}</h4>
+                      <p className="ios-subhead" style={{color: 'var(--ios-label-secondary)'}}>
                         {session.duration} min • {session.frequency}
                       </p>
                       {session.description && (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{session.description}</p>
+                        <p className="ios-caption mt-1 line-clamp-2" style={{color: 'var(--ios-label-tertiary)'}}>{session.description}</p>
                       )}
                     </div>
                     <button
@@ -143,7 +152,7 @@ export default function Dashboard() {
         )}
 
         {/* Bottom Safe Area Padding */}
-        <div className="h-8"></div>
+        <div className="ios-spacing-xl"></div>
       </div>
     </div>
   )
