@@ -207,6 +207,21 @@ export class FallbackVoiceSynthesis {
         description: `${voice.lang} - ${(voice as any).gender || 'Unknown'}`
       }))
   }
+
+  // Preview a voice with sample text (fallback implementation)
+  async previewVoice(voiceId: string): Promise<void> {
+    const sampleText = "Welcome to your personalized meditation session."
+    return await this.synthesizeText(sampleText, voiceId)
+  }
+
+  // Stub methods for compatibility
+  createAudioUrl(audioBuffer: ArrayBuffer | void): string {
+    return '' // No audio URL needed for browser TTS
+  }
+
+  revokeAudioUrl(url: string) {
+    // No-op for browser TTS
+  }
 }
 
 // Factory function

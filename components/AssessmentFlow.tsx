@@ -49,13 +49,21 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
     try {
       setIsPlaying(true)
       const voiceSynthesis = createVoiceSynthesis()
-      const audioBuffer = await voiceSynthesis.previewVoice(voiceId)
-      const audioUrl = voiceSynthesis.createAudioUrl(audioBuffer)
-      const audio = new Audio(audioUrl)
-      audio.play()
-      audio.onended = () => {
+
+      if ('synthesizeScript' in voiceSynthesis) {
+        // ElevenLabs API
+        const audioBuffer = await voiceSynthesis.previewVoice(voiceId)
+        const audioUrl = voiceSynthesis.createAudioUrl(audioBuffer)
+        const audio = new Audio(audioUrl)
+        audio.play()
+        audio.onended = () => {
+          setIsPlaying(false)
+          voiceSynthesis.revokeAudioUrl(audioUrl)
+        }
+      } else {
+        // Fallback browser TTS
+        await voiceSynthesis.previewVoice(voiceId)
         setIsPlaying(false)
-        voiceSynthesis.revokeAudioUrl(audioUrl)
       }
     } catch (error) {
       console.error('Voice preview failed:', error)
