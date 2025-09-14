@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useAppStore, type SessionConfig } from '@/lib/store'
 import { auth } from '@/lib/authClient'
 import { isDemoMode } from '@/lib/demoMode'
-// import AssessmentFlow from './AssessmentFlow'
+import AssessmentFlow from './AssessmentFlow'
 import SessionPlayer from './SessionPlayer'
 
 export default function Dashboard() {
@@ -26,7 +26,10 @@ export default function Dashboard() {
 
   if (showAssessment) {
     return (
-      <div>Assessment temporarily disabled for build fix</div>
+      <AssessmentFlow
+        onComplete={handleAssessmentComplete}
+        onCancel={() => setShowAssessment(false)}
+      />
     )
   }
 
