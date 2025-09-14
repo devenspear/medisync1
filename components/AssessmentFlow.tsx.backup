@@ -173,7 +173,10 @@ export default function AssessmentFlow({ onComplete, onCancel }: AssessmentFlowP
   )
 }
 
-function StepGoal({ selected, onSelect }: { selected: string; onSelect: (goal: string) => void }) {
+function StepGoal({ selected, onSelect }: {
+  selected: string
+  onSelect: (goal: string) => void
+}): JSX.Element {
   return (
     <div>
       <div className="text-center ios-section">
@@ -207,7 +210,10 @@ function StepGoal({ selected, onSelect }: { selected: string; onSelect: (goal: s
   )
 }
 
-function StepCurrentState({ selected, onSelect }: { selected: string; onSelect: (state: string) => void }) {
+function StepCurrentState({ selected, onSelect }: {
+  selected: string
+  onSelect: (state: string) => void
+}): JSX.Element {
   return (
     <div>
       <div className="text-center mb-8">
@@ -235,7 +241,10 @@ function StepCurrentState({ selected, onSelect }: { selected: string; onSelect: 
   )
 }
 
-function StepDuration({ selected, onSelect }: { selected: number; onSelect: (duration: number) => void }) {
+function StepDuration({ selected, onSelect }: {
+  selected: number
+  onSelect: (duration: number) => void
+}): JSX.Element {
   const durations = [3, 5, 10, 15, 20, 30]
 
   return (
@@ -265,7 +274,10 @@ function StepDuration({ selected, onSelect }: { selected: number; onSelect: (dur
   )
 }
 
-function StepExperience({ selected, onSelect }: { selected: string; onSelect: (experience: string) => void }) {
+function StepExperience({ selected, onSelect }: {
+  selected: string
+  onSelect: (experience: string) => void
+}): JSX.Element {
   const levels = [
     { id: 'beginner', label: 'Beginner', description: 'New to meditation', icon: '🌱' },
     { id: 'intermediate', label: 'Intermediate', description: 'Some experience', icon: '🌿' },
@@ -302,7 +314,10 @@ function StepExperience({ selected, onSelect }: { selected: string; onSelect: (e
   )
 }
 
-function StepTimeOfDay({ selected, onSelect }: { selected: string; onSelect: (time: string) => void }) {
+function StepTimeOfDay({ selected, onSelect }: {
+  selected: string
+  onSelect: (time: string) => void
+}): JSX.Element {
   const times = [
     { id: 'morning', label: 'Morning', description: 'Starting the day', icon: '🌅' },
     { id: 'midday', label: 'Midday', description: 'Work break', icon: '☀️' },
