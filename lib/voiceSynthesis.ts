@@ -204,7 +204,7 @@ export class FallbackVoiceSynthesis {
       .map(voice => ({
         id: voice.name,
         name: voice.name,
-        description: `${voice.lang} - ${voice.gender || 'Unknown'}`
+        description: `${voice.lang} - ${(voice as any).gender || 'Unknown'}`
       }))
   }
 }

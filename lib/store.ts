@@ -3,6 +3,17 @@ import { persist } from 'zustand/middleware'
 
 export type FrequencyType = 'delta' | 'theta' | 'alpha' | 'beta' | 'gamma'
 
+export interface AssessmentData {
+  goal: string
+  currentState: string
+  duration: number
+  experience: string
+  timeOfDay: string
+  challenges?: string
+  meditationStyle?: string
+  environment?: string
+}
+
 export interface AudioLayers {
   binaural_volume: number
   music_volume: number
@@ -18,7 +29,7 @@ export interface SessionConfig {
   frequency: FrequencyType
   voice_id: string
   layers: AudioLayers
-  assessment_data: Record<string, any>
+  assessment_data: AssessmentData
 }
 
 export interface UserPreferences {

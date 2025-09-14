@@ -1,4 +1,4 @@
-interface AssessmentData {
+export interface AssessmentData {
   goal: string
   currentState: string
   duration: number

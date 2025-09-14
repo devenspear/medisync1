@@ -57,7 +57,7 @@ export class AudioEngine {
         rolloff: -24
       }).connect(this.reverb)
 
-      this.ambientSynth = new Tone.PolySynth({
+      this.ambientSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: {
           type: 'sine'
         },

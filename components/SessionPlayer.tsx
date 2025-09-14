@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useAppStore, type SessionConfig } from '@/lib/store'
+import { useAppStore, type SessionConfig, type AssessmentData } from '@/lib/store'
 import { getAudioEngine } from '@/lib/audioEngine'
 import { createScriptGenerator } from '@/lib/scriptGenerator'
 import { createVoiceSynthesis, FallbackVoiceSynthesis } from '@/lib/voiceSynthesis'

@@ -1,18 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAppStore, type SessionConfig, type FrequencyType } from '@/lib/store'
-
-interface AssessmentData {
-  goal: string
-  currentState: string
-  duration: number
-  experience: string
-  timeOfDay: string
-  challenges?: string
-  meditationStyle?: string
-  environment?: string
-}
+import { useAppStore, type SessionConfig, type FrequencyType, type AssessmentData } from '@/lib/store'
 
 const GOALS = [
   { id: 'relaxation', label: 'Relaxation & Stress Relief', icon: '🧘‍♀️' },
