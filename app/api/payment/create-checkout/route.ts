@@ -2,13 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/auth';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-08-27.basil',
-});
-
 // POST /api/payment/create-checkout - Create Stripe checkout session
 async function POST(request: NextRequest & { user: any }) {
   try {
+    // Check if Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: 'Payment processing not configured' },
+        { status: 503 }
+      );
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+    });
     const { plan = 'monthly', success_url, cancel_url } = await request.json();
 
     const prices = {
