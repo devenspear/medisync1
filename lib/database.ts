@@ -234,6 +234,48 @@ export class Database {
           EXECUTE FUNCTION update_updated_at_column();
       `;
 
+      // Create session_completions table for tracking
+      await sql`
+        CREATE TABLE IF NOT EXISTS session_completions (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          session_id UUID REFERENCES session_configs(id) ON DELETE SET NULL,
+          duration_completed INTEGER NOT NULL,
+          total_duration INTEGER NOT NULL,
+          completion_percentage DECIMAL(3,2) NOT NULL,
+          frequency_used TEXT NOT NULL,
+          voice_used TEXT NOT NULL,
+          completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )
+      `;
+
+      // Create cached_meditation_scripts table for performance
+      await sql`
+        CREATE TABLE IF NOT EXISTS cached_meditation_scripts (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          cache_key TEXT UNIQUE NOT NULL,
+          goal TEXT NOT NULL,
+          current_state TEXT NOT NULL,
+          duration INTEGER NOT NULL,
+          experience TEXT NOT NULL,
+          time_of_day TEXT NOT NULL,
+          intro_text TEXT NOT NULL,
+          main_content TEXT NOT NULL,
+          closing_text TEXT NOT NULL,
+          total_words INTEGER NOT NULL,
+          estimated_duration INTEGER NOT NULL,
+          hit_count INTEGER DEFAULT 0,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          last_accessed TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )
+      `;
+
+      // Create additional indexes
+      await sql`CREATE INDEX IF NOT EXISTS idx_session_completions_user_id ON session_completions(user_id)`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_session_completions_completed_at ON session_completions(completed_at DESC)`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_cached_scripts_cache_key ON cached_meditation_scripts(cache_key)`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_cached_scripts_hit_count ON cached_meditation_scripts(hit_count DESC)`;
+
       console.log('✅ Database initialized successfully');
     } catch (error) {
       console.error('❌ Database initialization failed:', error);
