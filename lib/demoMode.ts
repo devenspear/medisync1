@@ -2,15 +2,13 @@ import { type SessionConfig } from './store'
 
 // Demo mode for when API keys are not available
 export const isDemoMode = () => {
-  const hasSupabaseConfig = process.env.NEXT_PUBLIC_SUPABASE_URL &&
-                           process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://placeholder.supabase.co' &&
-                           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-                           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'placeholder-key'
+  const hasElevenLabsKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY
+  const hasOpenAIKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY
 
-  // App can run with just Supabase - AI features are optional
-  console.log('Demo mode check:', { hasSupabaseConfig })
+  // App requires AI features to be fully functional
+  console.log('Demo mode check:', { hasElevenLabsKey: !!hasElevenLabsKey, hasOpenAIKey: !!hasOpenAIKey })
 
-  return !hasSupabaseConfig
+  return !hasElevenLabsKey || !hasOpenAIKey
 }
 
 // Demo user for offline mode

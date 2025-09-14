@@ -42,23 +42,36 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
   const initializeSession = async () => {
     try {
-      setLoadingMessage('Generating personalized script...')
+      setLoadingMessage('🤖 Generating personalized script with AI...')
       setLoadingProgress(0.1)
 
       // Generate the meditation script
       const script = await scriptGenerator.current.generateScript(session.assessment_data)
 
-      setLoadingMessage('Creating voice audio...')
+      setLoadingMessage('🎙️ Creating voice audio with ElevenLabs...')
       setLoadingProgress(0.3)
 
       // Generate voice audio (if using ElevenLabs)
       if (!(voiceSynthesis.current instanceof FallbackVoiceSynthesis)) {
+        setLoadingMessage('🎙️ Synthesizing intro narration...')
+
         const audioBuffers = await voiceSynthesis.current.synthesizeScript(
           script.intro_text,
           script.main_content,
           script.closing_text,
           session.voice_id,
-          (progress) => setLoadingProgress(0.3 + progress * 0.4)
+          (progress) => {
+            const overallProgress = 0.3 + progress * 0.4
+            setLoadingProgress(overallProgress)
+
+            if (progress < 0.4) {
+              setLoadingMessage('🎙️ Synthesizing intro narration...')
+            } else if (progress < 0.8) {
+              setLoadingMessage('🎙️ Synthesizing main meditation...')
+            } else {
+              setLoadingMessage('🎙️ Synthesizing closing guidance...')
+            }
+          }
         )
 
         // Create audio elements
@@ -69,21 +82,24 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
         audioElementsRef.current.intro = new Audio(introUrl)
         audioElementsRef.current.main = new Audio(mainUrl)
         audioElementsRef.current.closing = new Audio(closingUrl)
+      } else {
+        setLoadingMessage('🔊 Using browser speech synthesis...')
       }
 
-      setLoadingMessage('Setting up audio environment...')
+      setLoadingMessage('🎵 Setting up binaural beats & ambient audio...')
       setLoadingProgress(0.8)
 
       // Initialize audio engine
       await audioEngine.current.resumeAudioContext()
 
       setLoadingProgress(1.0)
-      setPhase('ready')
+      setLoadingMessage('✅ Session ready!')
+      setTimeout(() => setPhase('ready'), 500)
 
     } catch (error) {
       console.error('Session initialization failed:', error)
-      setLoadingMessage('Failed to initialize session. Using offline mode.')
-      setPhase('ready')
+      setLoadingMessage('⚠️ ElevenLabs unavailable. Using fallback audio.')
+      setTimeout(() => setPhase('ready'), 1000)
     }
   }
 
@@ -288,6 +304,14 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
             />
           </div>
           <p className="text-sm text-gray-400 mt-2">{formatTime(totalTime)} total</p>
+
+          {phase === 'ready' && !(voiceSynthesis.current instanceof FallbackVoiceSynthesis) && (
+            <div className="mt-4 flex items-center justify-center space-x-2">
+              <span className="text-xs text-gray-500">Powered by</span>
+              <span className="text-xs text-blue-400 font-semibold">ElevenLabs AI</span>
+              <span className="text-xs">🎙️</span>
+            </div>
+          )}
         </div>
 
         {/* Playback Controls */}
