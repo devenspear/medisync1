@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAppStore, type SessionConfig } from '@/lib/store'
-import { supabase } from '@/lib/supabase'
+import { auth } from '@/lib/authClient'
 import { isDemoMode } from '@/lib/demoMode'
 import AssessmentFlow from './AssessmentFlow'
 import SessionPlayer from './SessionPlayer'
@@ -14,7 +14,7 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     if (!isDemoMode()) {
-      await supabase.auth.signOut()
+      await auth.signOut()
     }
     // For demo mode, we could reset the store or just ignore sign out
   }

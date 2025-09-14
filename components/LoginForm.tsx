@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { auth } from '@/lib/authClient'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -17,18 +17,19 @@ export default function LoginForm() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        })
-        if (error) throw error
-        setMessage('Check your email for the confirmation link!')
+        const { error } = await auth.signUp(email, password)
+        if (error) {
+          setMessage(error)
+        } else {
+          setMessage('Account created successfully!')
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (error) throw error
+        const { error } = await auth.signInWithPassword(email, password)
+        if (error) {
+          setMessage(error)
+        } else {
+          setMessage('Welcome back!')
+        }
       }
     } catch (error: any) {
       setMessage(error.message)

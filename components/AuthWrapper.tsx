@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import { useAppStore } from '@/lib/store'
+import { auth } from '@/lib/authClient'
+import { useAppStore, type FrequencyType } from '@/lib/store'
 import { isDemoMode, getDemoUser, getDemoSessions } from '@/lib/demoMode'
+import type { AuthUser } from '@/lib/auth'
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { setUser, savedSessions, saveSession } = useAppStore()
@@ -23,63 +24,28 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       return
     }
 
-    // Production mode with Supabase
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
+    // Production mode with custom auth
+    // Listen for auth changes
+    const unsubscribe = auth.onAuthStateChange((user: AuthUser | null) => {
+      if (user) {
         setUser({
-          id: session.user.id,
-          email: session.user.email!,
-          subscription_tier: 'free',
-          total_minutes: 0,
-          current_streak: 0,
+          id: user.id,
+          email: user.email,
+          subscription_tier: user.subscription_tier,
+          total_minutes: user.total_minutes,
+          current_streak: user.current_streak,
           preferences: {
-            default_duration: 10,
-            preferred_voice: 'female-1',
-            favorite_frequency: 'alpha'
+            default_duration: user.preferences.default_duration,
+            preferred_voice: user.preferences.preferred_voice,
+            favorite_frequency: user.preferences.favorite_frequency as FrequencyType
           }
         })
-      }
-    })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Fetch or create user profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-
-        if (profile) {
-          setUser(profile)
-        } else {
-          // Create new profile
-          const newProfile = {
-            id: session.user.id,
-            email: session.user.email!,
-            subscription_tier: 'free' as const,
-            total_minutes: 0,
-            current_streak: 0,
-            preferences: {
-              default_duration: 10,
-              preferred_voice: 'female-1',
-              favorite_frequency: 'alpha' as const
-            }
-          }
-
-          await supabase.from('profiles').insert(newProfile)
-          setUser(newProfile)
-        }
-      } else if (event === 'SIGNED_OUT') {
+      } else {
         setUser(null)
       }
     })
 
-    return () => subscription.unsubscribe()
+    return unsubscribe
   }, [setUser])
 
   return <>{children}</>
