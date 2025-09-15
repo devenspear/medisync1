@@ -141,9 +141,35 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
   const generateScript = async () => {
     setIsGenerating(true)
     try {
-      const response = await fetch('/api/scripts', {
+      // Import demo mode check and auth client dynamically
+      const { isDemoMode } = await import('@/lib/demoMode')
+      const isDemo = isDemoMode()
+
+      console.log('Script generation mode:', isDemo ? 'Demo (test endpoint)' : 'Production (authenticated)')
+
+      // For development/testing, use test endpoint without auth
+      // For production, always require authentication
+      const endpoint = isDemo ? '/api/test-scripts' : '/api/scripts'
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      }
+
+      // Add authentication header for production
+      if (!isDemo) {
+        // Use proper auth token from authClient
+        const { authClient } = await import('@/lib/authClient')
+        const authToken = authClient.getToken()
+
+        if (!authToken) {
+          throw new Error('Authentication required. Please log in.')
+        }
+
+        headers['Authorization'] = `Bearer ${authToken}`
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           assessment: {
             ...assessment,
@@ -169,11 +195,18 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         setGeneratedScript(scriptText)
         setStep(8)
       } else {
-        throw new Error('Failed to generate script')
+        const data = await response.json()
+
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please log in again.')
+        }
+
+        throw new Error(`HTTP ${response.status}: ${data.error || 'Script generation failed'}`)
       }
     } catch (error) {
       console.error('Script generation failed:', error)
-      alert('Failed to generate meditation script. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate meditation script. Please try again.'
+      alert(errorMessage)
       setStep(6)
     } finally {
       setIsGenerating(false)
