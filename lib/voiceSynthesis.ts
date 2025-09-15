@@ -42,15 +42,45 @@ export class VoiceSynthesis {
     this.apiKey = apiKey
   }
 
+  // Clean and format meditation script text for natural TTS reading
+  private processScriptText(text: string): string {
+    let processedText = text
+
+    // Remove script formatting tags that shouldn't be read aloud
+    processedText = processedText.replace(/\[Pause\]/gi, '')
+    processedText = processedText.replace(/\[Core Message\]/gi, '')
+    processedText = processedText.replace(/\[Deep Breath\]/gi, '')
+    processedText = processedText.replace(/\[Gentle Guidance\]/gi, '')
+    processedText = processedText.replace(/\[Closing\]/gi, '')
+    processedText = processedText.replace(/\[Introduction\]/gi, '')
+
+    // Add natural pauses at sentence endings
+    processedText = processedText.replace(/\./g, '.<break time="1.5s"/>')
+    processedText = processedText.replace(/,/g, ',<break time="0.8s"/>')
+    processedText = processedText.replace(/:/g, ':<break time="1.0s"/>')
+    processedText = processedText.replace(/;/g, ';<break time="1.0s"/>')
+
+    // Add emphasis on key meditation words
+    processedText = processedText.replace(/\b(breathe|breath|relax|release|peace|calm)\b/gi, '<emphasis level="moderate">$1</emphasis>')
+
+    // Wrap in SSML speak tags
+    processedText = `<speak>${processedText}</speak>`
+
+    return processedText
+  }
+
   async synthesizeText(text: string, voiceId: string): Promise<ArrayBuffer> {
     const voice = this.voices[voiceId as keyof typeof this.voices]
     if (!voice) {
       throw new Error(`Voice ID ${voiceId} not found`)
     }
 
+    // Process the text to remove formatting tags and add natural pauses
+    const processedText = this.processScriptText(text)
+
     const options: VoiceOptions = {
       voice_id: voice.id,
-      text: text,
+      text: processedText,
       model_id: 'eleven_multilingual_v2',
       voice_settings: {
         stability: 0.75,

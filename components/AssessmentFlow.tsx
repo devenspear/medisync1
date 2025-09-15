@@ -535,8 +535,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       <div className="flex-1 overflow-y-auto">
         <div className="p-6 pb-4">
 
-            {/* Step 1: Goal Selection */}
-            {step === 1 && (
+          {/* Step 1: Goal Selection */}
+          {step === 1 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -575,8 +575,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 2: Wisdom Source Selection */}
-            {step === 2 && (
+          {/* Step 2: Wisdom Source Selection */}
+          {step === 2 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -613,8 +613,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 3: Feelings to Transcend (Apple-style toggles) */}
-            {step === 3 && (
+          {/* Step 3: Feelings to Transcend (Apple-style toggles) */}
+          {step === 3 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -640,8 +640,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 4: Survey Questions (Apple-style) */}
-            {step === 4 && (
+          {/* Step 4: Survey Questions (Apple-style) */}
+          {step === 4 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -676,8 +676,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 5: Duration Selection (Apple-style) */}
-            {step === 5 && (
+          {/* Step 5: Duration Selection (Apple-style) */}
+          {step === 5 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -719,8 +719,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 6: Music Theme Selection */}
-            {step === 6 && (
+          {/* Step 6: Music Theme Selection */}
+          {step === 6 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -753,22 +753,11 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                   })}
                 </div>
 
-                <button
-                  onClick={handleContinueFromTheme}
-                  disabled={!selectedPrimaryTheme}
-                  className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
-                    selectedPrimaryTheme
-                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
-                      : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  Continue
-                </button>
               </>
             )}
 
-            {/* Step 7: Atmospheric Elements Selection */}
-            {step === 7 && (
+          {/* Step 7: Atmospheric Elements Selection */}
+          {step === 7 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -792,17 +781,11 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                   ))}
                 </div>
 
-                <button
-                  onClick={handleContinueFromAtmospheric}
-                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
-                >
-                  Continue
-                </button>
               </>
             )}
 
-            {/* Step 8: Soundscape Journey Selection */}
-            {step === 8 && (
+          {/* Step 8: Soundscape Journey Selection */}
+          {step === 8 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -831,22 +814,11 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                   })}
                 </div>
 
-                <button
-                  onClick={handleContinueFromJourney}
-                  disabled={!selectedSoundscapeJourney}
-                  className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
-                    selectedSoundscapeJourney
-                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
-                      : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  Continue
-                </button>
               </>
             )}
 
-            {/* Step 9: Prompt Primer */}
-            {step === 9 && (
+          {/* Step 9: Prompt Primer */}
+          {step === 9 && (
               <>
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -915,17 +887,6 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                   </div>
                 </div>
 
-                <div className="mt-8">
-                  <button
-                    onClick={handleContinueFromPrimer}
-                    className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
-                  >
-                    <div className="flex items-center justify-center space-x-2">
-                      <span className="text-xl">✨</span>
-                      <span>Generate Script</span>
-                    </div>
-                  </button>
-                </div>
               </>
             )}
 
@@ -944,7 +905,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {/* Step 11: Review Script */}
             {step === 11 && (
               <>
-                <div className="text-center mb-8">
+                <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold text-white mb-4">
                     Review Script
                   </h3>
@@ -953,18 +914,15 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                   </p>
                 </div>
 
-                <div className="bg-gray-800/50 border border-gray-600 rounded-2xl p-6 mb-8 max-h-64 overflow-y-auto">
-                  <div className="text-white leading-relaxed whitespace-pre-line text-base">
-                    {generatedScript}
+                {/* Full screen script display */}
+                <div className="flex-1 bg-gray-800/50 border border-gray-600 rounded-2xl p-6 overflow-hidden">
+                  <div className="h-full overflow-y-auto">
+                    <div className="text-white leading-relaxed whitespace-pre-line text-base">
+                      {generatedScript}
+                    </div>
                   </div>
                 </div>
 
-                <button
-                  onClick={handleContinueFromReview}
-                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
-                >
-                  Choose Voice
-                </button>
               </>
             )}
 

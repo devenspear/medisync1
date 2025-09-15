@@ -117,10 +117,12 @@ export class FallbackMusicSynthesis {
 
 // Factory function to create appropriate music synthesis instance
 export function createMusicSynthesis(): MusicSynthesis | FallbackMusicSynthesis {
-  // Check if ElevenLabs API is available
-  if (process.env.NEXT_PUBLIC_ELEVENLABS_ENABLED === 'true') {
+  // Check if ElevenLabs API is available (check for API key presence)
+  const hasElevenLabsKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || process.env.ELEVENLABS_API_KEY
+  if (hasElevenLabsKey) {
     return new MusicSynthesis()
   } else {
+    console.warn('ElevenLabs API key not found, using fallback music synthesis')
     return new FallbackMusicSynthesis()
   }
 }

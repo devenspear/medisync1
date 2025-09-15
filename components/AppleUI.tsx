@@ -108,6 +108,15 @@ interface AppleProgressProps {
 }
 
 export function AppleProgress({ progress, message }: AppleProgressProps) {
+  // Generate engaging sub-text based on progress
+  const getEngagingText = () => {
+    if (progress < 0.2) return "🤖 AI is analyzing your preferences..."
+    if (progress < 0.4) return "📝 Crafting your unique meditation script..."
+    if (progress < 0.6) return "🎨 Designing the perfect experience..."
+    if (progress < 0.8) return "🧘‍♀️ Fine-tuning for your journey..."
+    return "✨ Almost ready for your transformation..."
+  }
+
   return (
     <div className="w-full max-w-sm mx-auto">
       {/* Breathing animation circle */}
@@ -124,6 +133,18 @@ export function AppleProgress({ progress, message }: AppleProgressProps) {
         </div>
       </div>
 
+      {/* Progress message */}
+      {message && (
+        <p className="text-center text-white text-lg font-medium mb-2">
+          {message}
+        </p>
+      )}
+
+      {/* Engaging sub-text to keep user focused */}
+      <p className="text-center text-gray-400 text-sm mb-6 leading-relaxed">
+        {getEngagingText()}
+      </p>
+
       {/* Progress bar */}
       <div className="w-full bg-gray-800 rounded-full h-3 mb-4 overflow-hidden">
         <div
@@ -132,15 +153,8 @@ export function AppleProgress({ progress, message }: AppleProgressProps) {
         />
       </div>
 
-      {/* Progress message */}
-      {message && (
-        <p className="text-center text-white text-lg font-medium">
-          {message}
-        </p>
-      )}
-
       {/* Percentage */}
-      <p className="text-center text-gray-400 text-sm mt-2">
+      <p className="text-center text-gray-400 text-sm">
         {Math.round(progress * 100)}%
       </p>
     </div>

@@ -92,6 +92,13 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       // Generate background music if assessment data is available
       if (session.assessment_data.selectedPrimaryTheme) {
         try {
+          console.log('🎵 Starting music generation with options:', {
+            duration: session.duration,
+            primaryTheme: session.assessment_data.selectedPrimaryTheme?.displayName,
+            atmosphericElements: session.assessment_data.selectedAtmosphericElements?.length || 0,
+            soundscapeJourney: session.assessment_data.selectedSoundscapeJourney?.displayName
+          })
+
           const musicOptions = {
             duration: session.duration,
             primaryTheme: session.assessment_data.selectedPrimaryTheme,
@@ -103,13 +110,22 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
           }
 
           const musicResult = await musicSynthesis.current.generateMusicWithFallback(musicOptions)
+          console.log('🎵 Music generation result:', musicResult ? 'Success' : 'Failed/Fallback')
+
           if (musicResult?.audioUrl) {
+            console.log('🎵 Loading music audio into engine...')
             const musicAudio = await audioEngine.current.playMusic(musicResult.audioUrl, session.layers.music_volume)
             musicAudio.pause() // Don't start playing yet
+            console.log('🎵 Music audio loaded and paused, ready to play')
+          } else {
+            console.log('🎵 No music audio URL generated - continuing without background music')
           }
         } catch (musicError) {
-          console.warn('Music generation failed, continuing without background music:', musicError)
+          console.error('🎵 Music generation failed:', musicError)
+          setLoadingMessage('⚠️ Music generation failed, continuing with voice only...')
         }
+      } else {
+        console.log('🎵 No primary theme selected, skipping music generation')
       }
 
       setLoadingMessage('🎙️ Creating voice audio with ElevenLabs...')
@@ -293,7 +309,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       layers: volumes
     }
     saveSession(updatedSession)
-    // TODO: Also save to Supabase
+    // Sessions are saved locally only
   }
 
   const formatTime = (seconds: number) => {
@@ -308,21 +324,43 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
     return (
       <div className="min-h-screen w-full flex items-center justify-center px-6">
         <div className="w-full max-w-sm text-center">
-          <div className="breathing-animation w-40 h-40 mx-auto mb-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-2xl">
-            <div className="w-20 h-20 rounded-full bg-white/20" />
+          {/* Enhanced breathing animation circle to match AppleProgress */}
+          <div className="w-32 h-32 mx-auto mb-8 relative">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 opacity-20 animate-ping" />
+            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 opacity-40 animate-pulse" />
+            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <svg className="w-8 h-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                  <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
+            </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-white mb-2">Preparing Your Session</h2>
-          <p className="text-gray-400 mb-8 text-sm leading-relaxed">{loadingMessage}</p>
+          <h2 className="text-2xl font-bold text-white mb-4">Preparing Your Session</h2>
 
-          <div className="w-full bg-gray-800 rounded-full h-2 mb-4">
+          {/* Enhanced loading message with engaging text */}
+          <p className="text-white text-lg font-medium mb-2">{loadingMessage}</p>
+
+          {/* Engaging sub-text to keep user focused */}
+          <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+            {loadingProgress < 0.3 ? "✨ Crafting your personalized journey..." :
+             loadingProgress < 0.6 ? "🎙️ Preparing soothing guidance..." :
+             loadingProgress < 0.8 ? "🎵 Setting the perfect atmosphere..." :
+             "🧘‍♀️ Almost ready for your meditation..."}
+          </p>
+
+          {/* Progress bar matching AppleProgress */}
+          <div className="w-full bg-gray-800 rounded-full h-3 mb-4 overflow-hidden">
             <div
-              className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+              className="h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${loadingProgress * 100}%` }}
             />
           </div>
 
-          <p className="text-sm text-gray-500">{Math.round(loadingProgress * 100)}%</p>
+          {/* Percentage */}
+          <p className="text-gray-400 text-sm">{Math.round(loadingProgress * 100)}%</p>
         </div>
       </div>
     )
