@@ -389,49 +389,47 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {/* Step 1: Goal Selection */}
             {step === 1 && (
               <>
-                <div className="text-center ios-section">
-                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     What's your intention?
                   </h3>
-                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                  <p className="text-gray-400 text-lg">
                     Choose your primary focus for this meditation.
                   </p>
                 </div>
 
-                <div className="ios-list mb-6">
-                  {GOAL_OPTIONS.map((goal) => (
-                    <button
-                      key={goal.goal}
-                      onClick={() => handleGoalSelect(goal.goal)}
-                      className={`ios-list-item no-select transition-all border-2 ${
-                        selectedGoal === goal.goal
-                          ? 'border-blue-400 bg-blue-500/10'
-                          : 'border-transparent hover:border-blue-400'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-4 w-full">
-                        <div className="text-left flex-1">
-                          <div className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
-                            {goal.goal}
-                          </div>
-                          <div className="ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
-                            {goal.coreFocus}
-                          </div>
-                        </div>
-                        {selectedGoal === goal.goal && (
-                          <span className="text-blue-400 text-xl">✓</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
+                <div className="space-y-4 mb-8">
+                  {GOAL_OPTIONS.map((goal, index) => {
+                    const gradients = [
+                      'from-blue-500 to-cyan-400',
+                      'from-green-500 to-emerald-400',
+                      'from-purple-500 to-pink-400',
+                      'from-orange-500 to-red-400',
+                      'from-indigo-500 to-purple-600',
+                      'from-teal-500 to-cyan-400',
+                      'from-pink-500 to-rose-400',
+                      'from-yellow-500 to-orange-400'
+                    ];
+
+                    return (
+                      <AppleCard
+                        key={goal.goal}
+                        isSelected={selectedGoal === goal.goal}
+                        onChange={() => handleGoalSelect(goal.goal)}
+                        title={goal.goal}
+                        subtitle={goal.coreFocus}
+                        gradient={gradients[index % gradients.length]}
+                      />
+                    );
+                  })}
                 </div>
 
                 {selectedGoal && (
                   <button
                     onClick={handleContinueFromGoal}
-                    className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform"
+                    className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
                   >
-                    <span className="ios-title-3 text-white">Continue</span>
+                    Continue
                   </button>
                 )}
               </>
@@ -440,48 +438,44 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {/* Step 2: Wisdom Source Selection */}
             {step === 2 && (
               <>
-                <div className="text-center ios-section mb-6">
-                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     Choose Your Wisdom Source
                   </h3>
-                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                  <p className="text-gray-400 text-lg">
                     Select the philosophical foundation for your meditation.
                   </p>
                 </div>
 
-                <div className="ios-list mb-6">
-                  {WISDOM_SOURCES.map((source) => (
-                    <button
-                      key={source.internalKeyword}
-                      onClick={() => handleWisdomSelect(source.internalKeyword)}
-                      className={`ios-list-item no-select transition-all border-2 ${
-                        selectedWisdom === source.internalKeyword
-                          ? 'border-blue-400 bg-blue-500/10'
-                          : 'border-transparent hover:border-blue-400'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-4 w-full">
-                        <div className="text-left flex-1">
-                          <div className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
-                            {source.displayName}
-                          </div>
-                          <div className="ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
-                            {source.conceptSnippet}
-                          </div>
-                        </div>
-                        {selectedWisdom === source.internalKeyword && (
-                          <span className="text-blue-400 text-xl">✓</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
+                <div className="space-y-4 mb-8">
+                  {WISDOM_SOURCES.map((source, index) => {
+                    const gradients = [
+                      'from-amber-500 to-orange-400',
+                      'from-blue-500 to-indigo-400',
+                      'from-green-500 to-teal-400',
+                      'from-purple-500 to-violet-400',
+                      'from-red-500 to-pink-400',
+                      'from-cyan-500 to-blue-400'
+                    ];
+
+                    return (
+                      <AppleCard
+                        key={source.internalKeyword}
+                        isSelected={selectedWisdom === source.internalKeyword}
+                        onChange={() => handleWisdomSelect(source.internalKeyword)}
+                        title={source.displayName}
+                        subtitle={source.conceptSnippet}
+                        gradient={gradients[index % gradients.length]}
+                      />
+                    );
+                  })}
                 </div>
 
                 <button
                   onClick={handleContinueFromWisdom}
-                  className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform"
+                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
                 >
-                  <span className="ios-title-3 text-white">Continue</span>
+                  Continue
                 </button>
               </>
             )}
@@ -520,102 +514,99 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 4: Survey Questions */}
+            {/* Step 4: Survey Questions (Apple-style) */}
             {step === 4 && (
               <>
-                <div className="text-center ios-section mb-6">
-                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     About You
                   </h3>
-                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                  <p className="text-gray-400 text-lg">
                     Help us personalize your meditation experience.
                   </p>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {SURVEY_QUESTIONS.map((question) => (
-                    <div key={question.id} className="space-y-3">
-                      <h4 className="ios-headline font-medium" style={{color: 'var(--ios-label)'}}>
+                    <div key={question.id} className="space-y-4">
+                      <h4 className="text-xl font-semibold text-white">
                         {question.question}
                       </h4>
-                      <div className="ios-list">
+                      <div className="space-y-3">
                         {question.options.map((option) => (
-                          <button
+                          <AppleCard
                             key={option.id}
-                            onClick={() => handleSurveyAnswer(question.id, option.id)}
-                            className={`ios-list-item no-select transition-all border-2 ${
-                              assessment[question.id as keyof typeof assessment] === option.id
-                                ? 'border-blue-400 bg-blue-500/10'
-                                : 'border-transparent hover:border-blue-400'
-                            }`}
-                          >
-                            <div className="flex items-center space-x-4 w-full">
-                              <span className="text-2xl">{option.icon}</span>
-                              <span className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
-                                {option.label}
-                              </span>
-                              {assessment[question.id as keyof typeof assessment] === option.id && (
-                                <span className="ml-auto text-blue-400 text-xl">✓</span>
-                              )}
-                            </div>
-                          </button>
+                            isSelected={assessment[question.id as keyof typeof assessment] === option.id}
+                            onChange={() => handleSurveyAnswer(question.id, option.id)}
+                            title={option.label}
+                            icon={option.icon}
+                            gradient="from-gray-600 to-gray-700"
+                          />
                         ))}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-8">
                   <button
                     onClick={handleContinueFromSurvey}
                     disabled={!['currentState', 'experience', 'environment'].every(key =>
                       assessment[key as keyof typeof assessment]
                     )}
-                    className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform disabled:opacity-50"
+                    className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
+                      ['currentState', 'experience', 'environment'].every(key =>
+                        assessment[key as keyof typeof assessment]
+                      )
+                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
+                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                    }`}
                   >
-                    <span className="ios-title-3 text-white">Continue</span>
+                    Continue
                   </button>
                 </div>
               </>
             )}
 
-            {/* Step 5: Duration Selection */}
+            {/* Step 5: Duration Selection (Apple-style) */}
             {step === 5 && (
               <>
-                <div className="text-center ios-section mb-6">
-                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     Duration
                   </h3>
-                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                  <p className="text-gray-400 text-lg">
                     How long would you like to meditate?
                   </p>
                 </div>
 
-                <div className="ios-list">
-                  {DURATIONS.map((duration) => (
-                    <button
-                      key={duration.id}
-                      onClick={() => handleDurationSelect(duration.id)}
-                      className="ios-list-item no-select transition-all border-2 border-transparent hover:border-blue-400"
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                            <span className="ios-headline font-bold text-blue-400">{duration.id}</span>
-                          </div>
-                          <div className="text-left">
-                            <div className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
-                              {duration.label}
-                            </div>
-                            <div className="ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
-                              {duration.description}
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-xl">→</span>
-                      </div>
-                    </button>
-                  ))}
+                <div className="space-y-4">
+                  {DURATIONS.map((duration, index) => {
+                    const gradients = [
+                      'from-green-500 to-emerald-400',
+                      'from-blue-500 to-cyan-400',
+                      'from-purple-500 to-pink-400',
+                      'from-orange-500 to-red-400',
+                      'from-indigo-500 to-purple-500'
+                    ];
+
+                    return (
+                      <button
+                        key={duration.id}
+                        onClick={() => handleDurationSelect(duration.id)}
+                        className="w-full"
+                      >
+                        <AppleCard
+                          isSelected={false} // Auto-continues on selection
+                          onChange={() => handleDurationSelect(duration.id)}
+                          title={duration.label}
+                          subtitle={duration.description}
+                          icon={`${duration.id}min`}
+                          gradient={gradients[index % gradients.length]}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               </>
             )}
