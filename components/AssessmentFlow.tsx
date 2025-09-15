@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { type SessionConfig, type AssessmentData } from '@/lib/store'
 import { createVoiceSynthesis } from '@/lib/voiceSynthesis'
-// Import only the data structures, not the template manager
 import { WISDOM_SOURCES, FEELING_OPTIONS, GOAL_OPTIONS } from '@/lib/promptConstants'
+import { PRIMARY_THEMES, ATMOSPHERIC_ELEMENTS, SOUNDSCAPE_JOURNEYS } from '@/lib/musicConstants'
+import type { PrimaryTheme, AtmosphericElement, SoundscapeJourney } from '@/lib/musicConstants'
+import { AppleToggle, AppleCard, AppleProgress, ApplePillButton } from './AppleUI'
 
 const VOICES = [
   { id: 'female-1', name: 'Kelli', description: 'Warm & comforting meditation voice', icon: '🎙️' },
@@ -59,7 +61,7 @@ interface Props {
 }
 
 export default function AssessmentFlow({ onComplete, onCancel }: Props) {
-  // 1: Goal, 2: Wisdom, 3: Feelings, 4: Survey, 5: Duration, 6: Primer, 7: Generating, 8: Review, 9: Voice
+  // Steps: 1: Goal, 2: Wisdom, 3: Feelings, 4: Survey, 5: Duration, 6: Music Theme, 7: Atmospheric Elements, 8: Soundscape Journey, 9: Primer, 10: Generating, 11: Review, 12: Voice
   const [step, setStep] = useState(1)
   const [selectedGoal, setSelectedGoal] = useState('')
   const [selectedWisdom, setSelectedWisdom] = useState('Default/Universal')
@@ -70,6 +72,13 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
   const [generatedScript, setGeneratedScript] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [generationProgress, setGenerationProgress] = useState(0)
+  const [generationMessage, setGenerationMessage] = useState('Preparing your meditation...')
+
+  // New music generation state
+  const [selectedPrimaryTheme, setSelectedPrimaryTheme] = useState<PrimaryTheme | null>(null)
+  const [selectedAtmosphericElements, setSelectedAtmosphericElements] = useState<AtmosphericElement[]>([])
+  const [selectedSoundscapeJourney, setSelectedSoundscapeJourney] = useState<SoundscapeJourney | null>(null)
   const [assessment, setAssessment] = useState<AssessmentData>({
     goal: '',
     currentState: '',
@@ -133,14 +142,57 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
     setStep(6)
   }
 
+  // New music generation handlers
+  const handlePrimaryThemeSelect = (theme: PrimaryTheme) => {
+    setSelectedPrimaryTheme(theme)
+  }
+
+  const handleContinueFromTheme = () => {
+    if (selectedPrimaryTheme) {
+      setStep(7)
+    }
+  }
+
+  const handleAtmosphericElementToggle = (element: AtmosphericElement) => {
+    const isSelected = selectedAtmosphericElements.some(e => e.displayName === element.displayName)
+    if (isSelected) {
+      setSelectedAtmosphericElements(prev => prev.filter(e => e.displayName !== element.displayName))
+    } else {
+      setSelectedAtmosphericElements(prev => [...prev, element])
+    }
+  }
+
+  const handleContinueFromAtmospheric = () => {
+    setStep(8)
+  }
+
+  const handleSoundscapeJourneySelect = (journey: SoundscapeJourney) => {
+    setSelectedSoundscapeJourney(journey)
+  }
+
+  const handleContinueFromJourney = () => {
+    if (selectedSoundscapeJourney) {
+      setStep(9)
+    }
+  }
+
   const handleContinueFromPrimer = () => {
-    setStep(7)
+    setStep(10)
     generateScript()
   }
 
   const generateScript = async () => {
     setIsGenerating(true)
+    setGenerationProgress(0)
+    setGenerationMessage('🤖 Analyzing your preferences...')
+
     try {
+      // Progress updates during generation
+      setTimeout(() => {
+        setGenerationProgress(0.2)
+        setGenerationMessage('🧠 Generating personalized meditation script...')
+      }, 500)
+
       // Always use authenticated production endpoint
       const { authClient } = await import('@/lib/authClient')
       const authToken = authClient.getToken()
@@ -148,6 +200,11 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       if (!authToken) {
         throw new Error('Authentication required. Please log in.')
       }
+
+      setTimeout(() => {
+        setGenerationProgress(0.5)
+        setGenerationMessage('✨ Crafting your unique meditation journey...')
+      }, 1500)
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -170,6 +227,9 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         })
       })
 
+      setGenerationProgress(0.8)
+      setGenerationMessage('🎯 Finalizing your meditation...')
+
       if (response.ok) {
         const { script } = await response.json()
         let scriptText = ''
@@ -180,7 +240,12 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         scriptText += script.intro_text + '\\n\\n' + script.main_content + '\\n\\n' + script.closing_text
 
         setGeneratedScript(scriptText)
-        setStep(8)
+        setGenerationProgress(1.0)
+        setGenerationMessage('✅ Your meditation is ready!')
+
+        setTimeout(() => {
+          setStep(11) // Updated step number for Review
+        }, 1000)
       } else {
         const data = await response.json()
 
@@ -194,14 +259,14 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       console.error('Script generation failed:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate meditation script. Please try again.'
       alert(errorMessage)
-      setStep(6)
+      setStep(9) // Go back to primer step
     } finally {
       setIsGenerating(false)
     }
   }
 
   const handleContinueFromReview = () => {
-    setStep(9)
+    setStep(12) // Updated step number for Voice selection
   }
 
   const handleVoicePreview = async (voiceId: string) => {
@@ -292,10 +357,13 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {step === 3 && 'Feelings'}
             {step === 4 && 'About You'}
             {step === 5 && 'Duration'}
-            {step === 6 && 'Customize'}
-            {step === 7 && 'Generating...'}
-            {step === 8 && 'Review Script'}
-            {step === 9 && 'Choose Voice'}
+            {step === 6 && 'Music Theme'}
+            {step === 7 && 'Atmosphere'}
+            {step === 8 && 'Journey Style'}
+            {step === 9 && 'Customize'}
+            {step === 10 && 'Generating...'}
+            {step === 11 && 'Review Script'}
+            {step === 12 && 'Choose Voice'}
           </div>
           <div className="w-16"></div>
         </div>
@@ -303,7 +371,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         {/* Progress Indicator */}
         <div className="px-6 py-2">
           <div className="flex space-x-1">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((stepNum) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((stepNum) => (
               <div
                 key={stepNum}
                 className={`h-1 flex-1 rounded-full transition-colors ${
@@ -418,49 +486,28 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 3: Feelings to Transcend (Checkboxes) */}
+            {/* Step 3: Feelings to Transcend (Apple-style toggles) */}
             {step === 3 && (
               <>
-                <div className="text-center ios-section mb-6">
-                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     What would you like to transform?
                   </h3>
-                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                  <p className="text-gray-400 text-lg">
                     Select any feelings you'd like to transcend. (Optional)
                   </p>
                 </div>
 
-                <div className="ios-list mb-6">
+                <div className="space-y-4 mb-8">
                   {FEELING_OPTIONS.map((feeling) => (
-                    <button
+                    <AppleToggle
                       key={feeling.feeling}
-                      onClick={() => handleFeelingToggle(feeling.feeling)}
-                      className={`ios-list-item no-select transition-all border-2 ${
-                        selectedFeelings.includes(feeling.feeling)
-                          ? 'border-blue-400 bg-blue-500/10'
-                          : 'border-transparent hover:border-blue-400'
-                      }`}
+                      isSelected={selectedFeelings.includes(feeling.feeling)}
+                      onChange={() => handleFeelingToggle(feeling.feeling)}
+                      description={`Transforms to: ${feeling.antidoteThemes}`}
                     >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="text-left flex-1">
-                          <div className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
-                            {feeling.feeling}
-                          </div>
-                          <div className="ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
-                            Transforms to: {feeling.antidoteThemes}
-                          </div>
-                        </div>
-                        <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
-                          selectedFeelings.includes(feeling.feeling)
-                            ? 'bg-blue-500 border-blue-500'
-                            : 'border-gray-400'
-                        }`}>
-                          {selectedFeelings.includes(feeling.feeling) && (
-                            <span className="text-white text-sm">✓</span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
+                      {feeling.feeling}
+                    </AppleToggle>
                   ))}
                 </div>
 
@@ -573,8 +620,134 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 6: Prompt Primer */}
+            {/* Step 6: Music Theme Selection */}
             {step === 6 && (
+              <>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
+                    Choose Your Soundscape
+                  </h3>
+                  <p className="text-gray-400 text-lg">
+                    Select the primary theme for your meditation music
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 mb-8">
+                  {PRIMARY_THEMES.map((theme, index) => {
+                    const gradients = [
+                      'from-blue-500 to-cyan-400',
+                      'from-green-500 to-emerald-400',
+                      'from-blue-400 to-indigo-500',
+                      'from-purple-500 to-pink-400'
+                    ];
+
+                    return (
+                      <AppleCard
+                        key={theme.displayName}
+                        isSelected={selectedPrimaryTheme?.displayName === theme.displayName}
+                        onChange={() => handlePrimaryThemeSelect(theme)}
+                        title={theme.displayName}
+                        subtitle={theme.keywords.split(',').slice(0, 3).join(', ') + '...'}
+                        gradient={gradients[index]}
+                      />
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={handleContinueFromTheme}
+                  disabled={!selectedPrimaryTheme}
+                  className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
+                    selectedPrimaryTheme
+                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
+                      : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  Continue
+                </button>
+              </>
+            )}
+
+            {/* Step 7: Atmospheric Elements Selection */}
+            {step === 7 && (
+              <>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
+                    Atmospheric Elements
+                  </h3>
+                  <p className="text-gray-400 text-lg">
+                    Add subtle layers to enhance your meditation (Optional)
+                  </p>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  {ATMOSPHERIC_ELEMENTS.map((element) => (
+                    <AppleToggle
+                      key={element.displayName}
+                      isSelected={selectedAtmosphericElements.some(e => e.displayName === element.displayName)}
+                      onChange={() => handleAtmosphericElementToggle(element)}
+                      description={element.description}
+                    >
+                      {element.displayName}
+                    </AppleToggle>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleContinueFromAtmospheric}
+                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+                >
+                  Continue
+                </button>
+              </>
+            )}
+
+            {/* Step 8: Soundscape Journey Selection */}
+            {step === 8 && (
+              <>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
+                    Journey Style
+                  </h3>
+                  <p className="text-gray-400 text-lg">
+                    How should your soundscape evolve over time?
+                  </p>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  {SOUNDSCAPE_JOURNEYS.map((journey, index) => {
+                    const icons = ['🌅', '🌊', '🌙'];
+
+                    return (
+                      <AppleCard
+                        key={journey.displayName}
+                        isSelected={selectedSoundscapeJourney?.displayName === journey.displayName}
+                        onChange={() => handleSoundscapeJourneySelect(journey)}
+                        title={journey.displayName}
+                        subtitle={journey.structure.substring(0, 80) + '...'}
+                        icon={icons[index]}
+                        gradient="from-indigo-500 to-purple-600"
+                      />
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={handleContinueFromJourney}
+                  disabled={!selectedSoundscapeJourney}
+                  className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
+                    selectedSoundscapeJourney
+                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
+                      : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  Continue
+                </button>
+              </>
+            )}
+
+            {/* Step 9: Prompt Primer */}
+            {step === 9 && (
               <>
                 <div className="text-center ios-section mb-6">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
@@ -640,25 +813,20 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 7: Generating Script */}
-            {step === 7 && (
+            {/* Step 10: Generating Script */}
+            {step === 10 && (
               <>
-                <div className="text-center ios-section">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-500/20 rounded-full flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                  <h3 className="ios-title-2 mb-2" style={{color: 'var(--ios-label)'}}>
-                    Creating Your Meditation
-                  </h3>
-                  <p className="ios-subhead" style={{color: 'var(--ios-label-secondary)'}}>
-                    Our AI is crafting a personalized script using the master prompt template...
-                  </p>
+                <div className="text-center">
+                  <AppleProgress
+                    progress={generationProgress}
+                    message={generationMessage}
+                  />
                 </div>
               </>
             )}
 
-            {/* Step 8: Review Script */}
-            {step === 8 && (
+            {/* Step 11: Review Script */}
+            {step === 11 && (
               <>
                 <div className="text-center ios-section mb-6">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
@@ -684,8 +852,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 9: Voice Selection */}
-            {step === 9 && (
+            {/* Step 12: Voice Selection */}
+            {step === 12 && (
               <>
                 <div className="text-center ios-section mb-6">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
