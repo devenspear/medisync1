@@ -32,11 +32,17 @@ async function generateMusicWithElevenLabs(prompt: string, duration: number): Pr
     hasApiKey: !!ELEVENLABS_API_KEY
   })
 
+  // ElevenLabs Sound Generation API has max 30 seconds duration
+  // For meditation music, we'll generate 30-second ambient loops
+  const maxDuration = Math.min(30, duration * 60)
+
   const requestBody = {
     text: prompt,
-    duration_seconds: duration * 60, // Convert minutes to seconds
+    duration_seconds: maxDuration,
     prompt_influence: 0.3,
-    seed: Math.floor(Math.random() * 1000000),
+    loop: true, // Enable looping for seamless ambient sound
+    model_id: "eleven_text_to_sound_v2",
+    output_format: "mp3_44100_128"
   }
 
   // ElevenLabs Music API endpoint

@@ -80,14 +80,7 @@ export class MusicPromptGenerator {
       .map(element => element.description)
       .join('\n');
 
-    return `Create a ${durationMinutes}-minute soundscape.
-
-Include styles: ambient, meditative, atmospheric, binaural, ethereal, drone, minimalist, relaxing, ${primaryTheme.keywords}.
-
-Exclude styles: percussive, rhythmic, energetic, vocal-heavy, abrasive, melodic, complex.
-
-The soundscape should follow this structure: ${soundscapeJourney.structure}
-
-${atmosphericDescriptions}`.trim();
+    // Optimize for ElevenLabs Sound Generation API - shorter, more direct prompts work better
+    return `Ambient meditation soundscape with ${primaryTheme.keywords}. Peaceful, calming, ethereal drone suitable for mindfulness. Soft atmospheric textures, gentle harmonics, no percussion.`.trim();
   }
 }
