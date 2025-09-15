@@ -62,6 +62,7 @@ export class ScriptGenerator {
 
     } catch (error) {
       console.error('Script generation failed:', error)
+      console.log('Using fallback script generation...')
       return this.getFallbackScript(assessment)
     }
   }
@@ -164,6 +165,21 @@ CLOSING:
         intro: "Welcome to your sleep preparation session. Lie down comfortably and let your eyes close naturally. Take a slow, deep breath in for 4 counts... hold gently for 4... and release completely for 6 counts. Feel your body sinking deeper into rest.",
         main: "With each breath, you're drifting further into peaceful relaxation. Your body is heavy and warm. Starting from your toes, feel each part of your body releasing into sleep. You are safe and protected. Tomorrow will take care of itself. Right now, there is only peace and rest. Your breathing is becoming slower and deeper.",
         closing: "Allow yourself to drift naturally into peaceful sleep. There's nothing you need to do now except rest. Sweet dreams await you."
+      },
+      anxiety: {
+        intro: "Welcome to your anxiety relief session. Find a safe, comfortable position and gently close your eyes. Take a slow breath in for 4 counts... hold for 4... and release for 6 counts. You are safe in this moment.",
+        main: "Continue this calming breath. Notice that anxiety is temporary - it rises and falls like waves. You are the steady shore, unshaken by these waves. With each breath, feel your nervous system settling. You have survived difficult moments before, and you will navigate this one too. You are stronger than your anxiety.",
+        closing: "Feel your breath returning to its natural rhythm. You carry this sense of calm within you always. When you're ready, gently open your eyes, knowing you can return to this peaceful state anytime."
+      },
+      creativity: {
+        intro: "Welcome to your creativity session. Sit comfortably and close your eyes with gentle curiosity. Breathe in inspiration for 4 counts... hold for 4... breathe out limitations for 6 counts. Your creative mind is awakening.",
+        main: "With each breath, feel your creative energy flowing freely. There are no wrong ideas, only possibilities waiting to be explored. Visualize your mind as a garden where new ideas can bloom. You are naturally creative and innovative. Trust in your unique perspective and artistic vision.",
+        closing: "Feel this creative energy flowing through you. You carry infinite possibilities within. Take three inspiring breaths and open your eyes, ready to create with renewed vision."
+      },
+      energy: {
+        intro: "Welcome to your energy session. Sit up straight and close your eyes with anticipation. Take a revitalizing breath in for 4 counts... hold for 4... breathe out fatigue for 6 counts. Feel your natural vitality stirring.",
+        main: "With each breath, draw in fresh energy and vitality. Visualize bright, golden light filling your body with each inhale. You are naturally energetic and vibrant. Feel this energy flowing through your entire being, awakening every cell. You have all the energy you need to accomplish your goals.",
+        closing: "Feel this vibrant energy settling into your being. You are refreshed and energized. Take three invigorating breaths and open your eyes, ready to embrace your day with renewed vitality."
       }
     }
 
