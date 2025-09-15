@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAppStore, type SessionConfig, type AssessmentData } from '@/lib/store'
-import { getAudioEngine } from '@/lib/audioEngine'
+import { getAudioEngine } from '@/lib/audioEngineV2'
 import { type MeditationScript } from '@/lib/scriptGenerator'
 import { createVoiceSynthesis, FallbackVoiceSynthesis } from '@/lib/voiceSynthesis'
+import { createMusicSynthesis, type MusicGenerationOptions } from '@/lib/musicSynthesis'
 
 interface SessionPlayerProps {
   session: SessionConfig
@@ -22,6 +23,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
   const [volumes, setVolumes] = useState(session.layers)
 
   const audioEngine = useRef(getAudioEngine())
+  const musicSynthesis = useRef(createMusicSynthesis())
   // Helper function to generate scripts with authentication
   const generateScript = async (assessmentData: AssessmentData, promptPrimer?: string): Promise<MeditationScript> => {
     // Always use authenticated production endpoint

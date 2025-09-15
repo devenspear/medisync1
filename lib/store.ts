@@ -16,10 +16,22 @@ export interface AssessmentData {
   wisdomSource: string
   selectedFeelings: string[]
   userPrimer: string
+  // Music generation selections
+  selectedPrimaryTheme?: {
+    displayName: string
+    keywords: string
+  }
+  selectedAtmosphericElements?: Array<{
+    displayName: string
+    description: string
+  }>
+  selectedSoundscapeJourney?: {
+    displayName: string
+    structure: string
+  }
 }
 
 export interface AudioLayers {
-  binaural_volume: number
   music_volume: number
   voice_volume: number
   music_type: string
@@ -30,7 +42,6 @@ export interface SessionConfig {
   name: string
   description?: string
   duration: number
-  frequency: FrequencyType
   voice_id: string
   layers: AudioLayers
   assessment_data: AssessmentData

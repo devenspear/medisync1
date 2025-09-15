@@ -321,10 +321,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       name: `${selectedGoal.charAt(0).toUpperCase() + selectedGoal.slice(1)} Session`,
       description: `${selectedDuration} minute ${selectedGoal} session with AI-generated guidance`,
       duration: selectedDuration,
-      frequency: 'alpha',
       voice_id: selectedVoice,
       layers: {
-        binaural_volume: 0.6,
         music_volume: 0.4,
         voice_volume: 0.8,
         music_type: 'ambient',
@@ -334,7 +332,10 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         goal: selectedGoal,
         wisdomSource: selectedWisdom,
         selectedFeelings: selectedFeelings,
-        userPrimer: promptPrimer
+        userPrimer: promptPrimer,
+        selectedPrimaryTheme,
+        selectedAtmosphericElements,
+        selectedSoundscapeJourney
       },
     }
     onComplete(sessionConfig)
