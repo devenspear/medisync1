@@ -17,7 +17,8 @@ type SessionPhase = 'loading' | 'ready' | 'playing' | 'paused' | 'completed'
 export default function SessionPlayer({ session, onClose }: SessionPlayerProps) {
   const [phase, setPhase] = useState<SessionPhase>('loading')
   const [currentTime, setCurrentTime] = useState(0)
-  const [totalTime] = useState(session.duration * 60) // Convert to seconds
+  const [totalTime, setTotalTime] = useState(session.duration * 60) // Convert to seconds
+  const [actualVoiceDuration, setActualVoiceDuration] = useState(0) // Track actual voice duration
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [loadingMessage, setLoadingMessage] = useState('Initializing...')
   const [volumes, setVolumes] = useState(session.layers)
@@ -159,9 +160,50 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
         const mainUrl = voiceSynthesis.current.createAudioUrl(audioBuffers.main)
         const closingUrl = voiceSynthesis.current.createAudioUrl(audioBuffers.closing)
 
-        audioElementsRef.current.intro = new Audio(introUrl)
-        audioElementsRef.current.main = new Audio(mainUrl)
-        audioElementsRef.current.closing = new Audio(closingUrl)
+        const introAudio = new Audio(introUrl)
+        const mainAudio = new Audio(mainUrl)
+        const closingAudio = new Audio(closingUrl)
+
+        audioElementsRef.current.intro = introAudio
+        audioElementsRef.current.main = mainAudio
+        audioElementsRef.current.closing = closingAudio
+
+        // Calculate total voice duration once audio is loaded
+        setLoadingMessage('🔍 Calculating voice duration...')
+        await Promise.all([
+          new Promise(resolve => {
+            introAudio.onloadedmetadata = resolve
+            introAudio.load()
+          }),
+          new Promise(resolve => {
+            mainAudio.onloadedmetadata = resolve
+            mainAudio.load()
+          }),
+          new Promise(resolve => {
+            closingAudio.onloadedmetadata = resolve
+            closingAudio.load()
+          })
+        ])
+
+        const totalVoiceDuration = introAudio.duration + mainAudio.duration + closingAudio.duration
+        console.log('🎙️ Voice durations:', {
+          intro: introAudio.duration,
+          main: mainAudio.duration,
+          closing: closingAudio.duration,
+          total: totalVoiceDuration
+        })
+
+        // Extend session time to voice duration + 5 seconds buffer
+        const extendedDuration = Math.max(totalTime, totalVoiceDuration + 5)
+        console.log('⏰ Session timing:', {
+          originalDuration: totalTime,
+          voiceDuration: totalVoiceDuration,
+          extendedDuration: extendedDuration
+        })
+
+        setActualVoiceDuration(totalVoiceDuration)
+        setTotalTime(extendedDuration)
+        setLoadingMessage('✅ Voice duration calculated and session extended')
       } else {
         setLoadingMessage('🔊 Using browser speech synthesis...')
       }
@@ -187,14 +229,31 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
     try {
       setPhase('playing')
 
-      // Resume music if it was set up during initialization
+      // Debug music audio state
       const musicAudio = audioEngine.current.getMusicAudio()
+      console.log('🎵 Music audio state:', {
+        musicAudioExists: !!musicAudio,
+        musicAudioSrc: musicAudio?.src,
+        musicVolume: volumes.music_volume
+      })
+
+      // Resume/start music if it was set up during initialization
       if (musicAudio) {
-        await musicAudio.play()
+        console.log('🎵 Starting music playback...')
+        musicAudio.volume = volumes.music_volume
+        try {
+          await musicAudio.play()
+          console.log('🎵 Music started successfully')
+        } catch (musicError) {
+          console.error('🎵 Music playback failed:', musicError)
+        }
+      } else {
+        console.warn('🎵 No music audio available - background music will not play')
       }
 
       // Start voice guidance (either ElevenLabs audio or fallback TTS)
       if (audioElementsRef.current.intro) {
+        console.log('🎙️ Starting voice narration...')
         audioElementsRef.current.intro.volume = volumes.voice_volume
         audioElementsRef.current.intro.play()
       } else if (voiceSynthesis.current instanceof FallbackVoiceSynthesis) {
@@ -262,7 +321,17 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
     timerRef.current = setInterval(() => {
       setCurrentTime(prev => {
         const newTime = prev + 1
+
+        // Implement music fade-out during final 5 seconds
+        const remainingTime = totalTime - newTime
+        if (remainingTime <= 5 && remainingTime > 0) {
+          const fadeVolume = (remainingTime / 5) * volumes.music_volume
+          console.log(`🎵 Fading music: ${remainingTime}s remaining, volume: ${fadeVolume}`)
+          audioEngine.current.setMusicVolume(fadeVolume)
+        }
+
         if (newTime >= totalTime) {
+          console.log('⏰ Session time complete - stopping session')
           stopSession()
           return totalTime
         }
@@ -291,13 +360,27 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
     const newVolumes = { ...volumes, [layer]: value }
     setVolumes(newVolumes)
 
+    console.log(`🔊 Volume change: ${layer} = ${value}`)
+
     // Apply volume changes in real-time
     if (phase === 'playing') {
       if (layer === 'music_volume') {
+        console.log('🎵 Applying music volume change:', value)
         audioEngine.current.setMusicVolume(value)
+
+        // Also directly update the HTML audio element if available
+        const musicAudio = audioEngine.current.getMusicAudio()
+        if (musicAudio) {
+          musicAudio.volume = value
+          console.log('🎵 Music audio volume updated directly:', musicAudio.volume)
+        }
       } else if (layer === 'voice_volume') {
+        console.log('🎙️ Applying voice volume change:', value)
         Object.values(audioElementsRef.current).forEach(audio => {
-          if (audio) audio.volume = value
+          if (audio) {
+            audio.volume = value
+            console.log('🎙️ Voice audio volume updated:', audio.volume)
+          }
         })
       }
     }

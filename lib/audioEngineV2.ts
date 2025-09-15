@@ -22,6 +22,12 @@ export class AudioEngineV2 {
 
   private async initializeAudioContext() {
     try {
+      // Only initialize in browser environment
+      if (typeof window === 'undefined') {
+        console.warn('AudioContext not available in server environment')
+        return
+      }
+
       this.audioContext = new AudioContext()
 
       // Create gain nodes for volume control
