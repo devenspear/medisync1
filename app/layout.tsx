@@ -20,7 +20,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       </head>
-      <body className="ios-system-font antialiased ios-background safe-area-container">
+      <body className="font-system antialiased bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white safe-area-container">
         <div className="w-full max-w-full overflow-x-hidden">
           {children}
         </div>

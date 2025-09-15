@@ -340,16 +340,163 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
     onComplete(sessionConfig)
   }
 
+  const renderFooterButton = () => {
+    // Don't show footer button for generation step
+    if (step === 10) return null
+
+    if (step === 1) {
+      return selectedGoal ? (
+        <button
+          onClick={handleContinueFromGoal}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Continue
+        </button>
+      ) : null
+    }
+
+    if (step === 2) {
+      return (
+        <button
+          onClick={handleContinueFromWisdom}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Continue
+        </button>
+      )
+    }
+
+    if (step === 3) {
+      return (
+        <button
+          onClick={handleContinueFromFeelings}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Continue
+        </button>
+      )
+    }
+
+    if (step === 4) {
+      const hasAllAnswers = ['currentState', 'experience', 'environment'].every(key =>
+        assessment[key as keyof typeof assessment]
+      )
+      return (
+        <button
+          onClick={handleContinueFromSurvey}
+          disabled={!hasAllAnswers}
+          className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
+            hasAllAnswers
+              ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
+              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          Continue
+        </button>
+      )
+    }
+
+    if (step === 5) {
+      // Duration step auto-continues, no button needed
+      return null
+    }
+
+    if (step === 6) {
+      return selectedPrimaryTheme ? (
+        <button
+          onClick={handleContinueFromTheme}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Continue
+        </button>
+      ) : (
+        <button
+          disabled
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-gray-700 text-gray-400 cursor-not-allowed"
+        >
+          Continue
+        </button>
+      )
+    }
+
+    if (step === 7) {
+      return (
+        <button
+          onClick={handleContinueFromAtmospheric}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Continue
+        </button>
+      )
+    }
+
+    if (step === 8) {
+      return selectedSoundscapeJourney ? (
+        <button
+          onClick={handleContinueFromJourney}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Continue
+        </button>
+      ) : (
+        <button
+          disabled
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-gray-700 text-gray-400 cursor-not-allowed"
+        >
+          Continue
+        </button>
+      )
+    }
+
+    if (step === 9) {
+      return (
+        <button
+          onClick={handleContinueFromPrimer}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          <div className="flex items-center justify-center space-x-2">
+            <span className="text-xl">✨</span>
+            <span>Generate Script</span>
+          </div>
+        </button>
+      )
+    }
+
+    if (step === 11) {
+      return (
+        <button
+          onClick={handleContinueFromReview}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Choose Voice
+        </button>
+      )
+    }
+
+    if (step === 12) {
+      return (
+        <button
+          onClick={handleCreateSession}
+          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+        >
+          Create Session
+        </button>
+      )
+    }
+
+    return null
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      <div className="flex flex-col h-screen">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-gray-900/95 backdrop-blur-sm">
+    <div className="h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex flex-col overflow-hidden">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0 bg-black/50 backdrop-blur-xl border-b border-gray-800/50">
+        <div className="flex items-center justify-between px-6 py-4">
           <button
             onClick={step === 1 ? onCancel : () => setStep(step - 1)}
-            className="px-4 py-2 text-blue-500 font-medium text-lg active:scale-95 transition-transform"
+            className="w-10 h-10 rounded-full bg-gray-800/50 flex items-center justify-center text-blue-400 active:scale-95 transition-all"
           >
-            {step === 1 ? 'Cancel' : '← Back'}
+            {step === 1 ? '✕' : '←'}
           </button>
           <div className="text-lg font-semibold text-white">
             {step === 1 && 'Choose Goal'}
@@ -365,11 +512,11 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {step === 11 && 'Review Script'}
             {step === 12 && 'Choose Voice'}
           </div>
-          <div className="w-16"></div>
+          <div className="w-10"></div>
         </div>
 
         {/* Progress Indicator */}
-        <div className="px-6 py-2">
+        <div className="px-6 pb-4">
           <div className="flex space-x-1">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((stepNum) => (
               <div
@@ -381,10 +528,11 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 px-6 py-6 flex flex-col">
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-3xl p-6 flex-1 border border-gray-700/50">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 pb-4">
 
             {/* Step 1: Goal Selection */}
             {step === 1 && (
@@ -423,15 +571,6 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                     );
                   })}
                 </div>
-
-                {selectedGoal && (
-                  <button
-                    onClick={handleContinueFromGoal}
-                    className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
-                  >
-                    Continue
-                  </button>
-                )}
               </>
             )}
 
@@ -470,13 +609,6 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                     );
                   })}
                 </div>
-
-                <button
-                  onClick={handleContinueFromWisdom}
-                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
-                >
-                  Continue
-                </button>
               </>
             )}
 
@@ -504,13 +636,6 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                     </AppleToggle>
                   ))}
                 </div>
-
-                <button
-                  onClick={handleContinueFromFeelings}
-                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
-                >
-                  Continue
-                </button>
               </>
             )}
 
@@ -546,24 +671,6 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                       </div>
                     </div>
                   ))}
-                </div>
-
-                <div className="mt-8">
-                  <button
-                    onClick={handleContinueFromSurvey}
-                    disabled={!['currentState', 'experience', 'environment'].every(key =>
-                      assessment[key as keyof typeof assessment]
-                    )}
-                    className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
-                      ['currentState', 'experience', 'environment'].every(key =>
-                        assessment[key as keyof typeof assessment]
-                      )
-                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
-                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    Continue
-                  </button>
                 </div>
               </>
             )}
@@ -909,21 +1016,15 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                     </button>
                   ))}
                 </div>
-
-                <button
-                  onClick={handleCreateSession}
-                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
-                >
-                  <div className="flex items-center justify-center space-x-2">
-                    <span className="text-xl">✨</span>
-                    Create Session
-                  </div>
-                </button>
               </>
             )}
 
-          </div>
         </div>
+      </div>
+
+      {/* Fixed Footer with Continue Button */}
+      <div className="flex-shrink-0 bg-black/50 backdrop-blur-xl border-t border-gray-800/50 p-6">
+        {renderFooterButton()}
       </div>
     </div>
   )
