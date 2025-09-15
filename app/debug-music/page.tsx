@@ -45,6 +45,10 @@ export default function MusicDebugPage() {
       }, null, 2)}`)
 
       addLog('Calling music synthesis...')
+
+      // Log which synthesis class we're using
+      addLog(`Using synthesis type: ${musicSynthesis.current.constructor.name}`)
+
       const result = await musicSynthesis.current.generateMusicWithFallback(musicOptions)
 
       if (result) {
@@ -55,8 +59,9 @@ export default function MusicDebugPage() {
 
         setMusicUrl(result.audioUrl)
       } else {
-        addLog('❌ Music generation returned null (fallback mode)')
-        setError('Music generation failed - likely using fallback mode')
+        addLog('❌ Music generation returned null')
+        addLog('This should not happen with enhanced fallback - investigating...')
+        setError('Music generation failed - this indicates a bug in the fallback system')
       }
 
     } catch (err) {

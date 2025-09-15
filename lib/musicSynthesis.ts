@@ -64,8 +64,11 @@ export class MusicSynthesis {
     try {
       return await this.generateMusic(options)
     } catch (error) {
-      console.warn('ElevenLabs music generation failed, continuing without music:', error)
-      return null
+      console.warn('ElevenLabs music generation failed, falling back to client-side ambient generation:', error)
+
+      // Fall back to client-side ambient generation
+      const fallbackSynthesis = new FallbackMusicSynthesis()
+      return await fallbackSynthesis.generateMusic(options)
     }
   }
 
