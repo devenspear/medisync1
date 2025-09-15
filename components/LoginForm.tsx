@@ -43,10 +43,10 @@ export default function LoginForm() {
       <div className="w-full max-w-sm mx-auto px-6">
         <div className="text-center mb-12">
           <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl mb-6">
-            <span className="text-2xl font-bold text-white">M</span>
+            <span className="text-2xl font-bold text-white">S</span>
           </div>
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">MediSync</h1>
+            <h1 className="text-4xl font-bold text-white mb-2">StillCaster</h1>
             <p className="text-gray-400 text-lg">AI-Powered Meditation</p>
           </div>
         </div>

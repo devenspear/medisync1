@@ -49,7 +49,7 @@ export default function Dashboard() {
                 <div>
                   <p className="text-lg font-semibold text-orange-100 mb-1">Demo Mode</p>
                   <p className="text-orange-200/80 leading-relaxed">
-                    You're experiencing MediSync with sample data. Add API keys to enable full functionality.
+                    You're experiencing StillCaster with sample data. Add API keys to enable full functionality.
                   </p>
                 </div>
               </div>

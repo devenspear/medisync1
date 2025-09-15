@@ -57,7 +57,7 @@ export default function DebugPage() {
             >
               <div className="text-2xl mb-2">🏠</div>
               <div className="font-semibold">Back to App</div>
-              <div className="text-sm text-blue-300">Return to MediSync</div>
+              <div className="text-sm text-blue-300">Return to StillCaster</div>
             </a>
 
             <button

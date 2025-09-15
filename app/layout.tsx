@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MediSync - AI-Powered Meditation Platform",
+  title: "StillCaster - AI-Powered Meditation Platform",
   description: "Personalized binaural beat meditation with AI-generated scripts and voice guidance",
 };
 

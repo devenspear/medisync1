@@ -129,7 +129,7 @@ export const useAppStore = create<AppState>()(
       },
     }),
     {
-      name: 'medisync-store',
+      name: 'stillcaster-store',
       partialize: (state) => ({
         user: state.user,
         savedSessions: state.savedSessions,

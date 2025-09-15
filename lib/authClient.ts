@@ -10,14 +10,14 @@ export class AuthClient {
   constructor() {
     // Initialize from localStorage on client side
     if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('medisync_token');
-      const userStr = localStorage.getItem('medisync_user');
+      this.token = localStorage.getItem('stillcaster_token');
+      const userStr = localStorage.getItem('stillcaster_user');
       if (userStr) {
         try {
           this.user = JSON.parse(userStr);
         } catch (error) {
           console.error('Failed to parse stored user:', error);
-          localStorage.removeItem('medisync_user');
+          localStorage.removeItem('stillcaster_user');
         }
       }
 
@@ -54,8 +54,8 @@ export class AuthClient {
     this.token = token;
 
     if (typeof window !== 'undefined') {
-      localStorage.setItem('medisync_token', token);
-      localStorage.setItem('medisync_user', JSON.stringify(user));
+      localStorage.setItem('stillcaster_token', token);
+      localStorage.setItem('stillcaster_user', JSON.stringify(user));
     }
 
     this.notifyListeners();
@@ -67,8 +67,8 @@ export class AuthClient {
     this.token = null;
 
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('medisync_token');
-      localStorage.removeItem('medisync_user');
+      localStorage.removeItem('stillcaster_token');
+      localStorage.removeItem('stillcaster_user');
     }
 
     this.notifyListeners();
@@ -160,7 +160,7 @@ export class AuthClient {
       this.user = data.user;
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem('medisync_user', JSON.stringify(this.user));
+        localStorage.setItem('stillcaster_user', JSON.stringify(this.user));
       }
 
       this.notifyListeners();

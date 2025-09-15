@@ -1,4 +1,4 @@
-// Music generation constants from MediSync_Music_Gen.md spec
+// Music generation constants from StillCaster_Music_Gen.md spec
 
 export interface PrimaryTheme {
   displayName: string;

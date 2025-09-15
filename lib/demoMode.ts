@@ -30,7 +30,7 @@ export const isDemoMode = () => {
 // Demo user for offline mode
 export const getDemoUser = () => ({
   id: 'demo-user-123',
-  email: 'demo@medisync.com',
+  email: 'demo@stillcaster.com',
   subscription_tier: 'free' as const,
   total_minutes: 45,
   current_streak: 3,
