@@ -25,6 +25,20 @@ async function generateMusicWithElevenLabs(prompt: string, duration: number): Pr
     throw new Error('ElevenLabs API key not configured')
   }
 
+  console.log('🎵 ElevenLabs Music API Request:', {
+    endpoint: 'https://api.elevenlabs.io/v1/sound-generation',
+    prompt: prompt.substring(0, 100) + '...',
+    duration_seconds: duration * 60,
+    hasApiKey: !!ELEVENLABS_API_KEY
+  })
+
+  const requestBody = {
+    text: prompt,
+    duration_seconds: duration * 60, // Convert minutes to seconds
+    prompt_influence: 0.3,
+    seed: Math.floor(Math.random() * 1000000),
+  }
+
   // ElevenLabs Music API endpoint
   const response = await fetch('https://api.elevenlabs.io/v1/sound-generation', {
     method: 'POST',
@@ -33,20 +47,33 @@ async function generateMusicWithElevenLabs(prompt: string, duration: number): Pr
       'Content-Type': 'application/json',
       'xi-api-key': ELEVENLABS_API_KEY,
     },
-    body: JSON.stringify({
-      text: prompt,
-      duration_seconds: duration * 60, // Convert minutes to seconds
-      prompt_influence: 0.3,
-      seed: Math.floor(Math.random() * 1000000),
-    }),
+    body: JSON.stringify(requestBody),
+  })
+
+  console.log('🎵 ElevenLabs API Response:', {
+    status: response.status,
+    statusText: response.statusText,
+    headers: Object.fromEntries(response.headers.entries())
   })
 
   if (!response.ok) {
     const errorText = await response.text()
+    console.error('🎵 ElevenLabs API Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      errorText: errorText,
+      requestBody: requestBody
+    })
     throw new Error(`ElevenLabs API error: ${response.status} ${errorText}`)
   }
 
-  return response.arrayBuffer()
+  const arrayBuffer = await response.arrayBuffer()
+  console.log('🎵 Music generated successfully:', {
+    size: arrayBuffer.byteLength,
+    duration: duration
+  })
+
+  return arrayBuffer
 }
 
 async function handler(request: NextRequest) {
