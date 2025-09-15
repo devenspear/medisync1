@@ -24,8 +24,8 @@ export class ScriptGenerator {
     this.apiKey = apiKey
   }
 
-  async generateScript(assessment: AssessmentData): Promise<MeditationScript> {
-    const prompt = this.constructPrompt(assessment)
+  async generateScript(assessment: AssessmentData, promptPrimer?: string): Promise<MeditationScript> {
+    const prompt = this.constructPrompt(assessment, promptPrimer)
 
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -66,14 +66,20 @@ export class ScriptGenerator {
     }
   }
 
-  private constructPrompt(assessment: AssessmentData): string {
+  private constructPrompt(assessment: AssessmentData, promptPrimer?: string): string {
     const affirmationCount = Math.floor(assessment.duration / 3) // Roughly one affirmation every 3 minutes
 
-    return `Create a ${assessment.duration}-minute meditation script for someone who:
+    let basePrompt = `Create a ${assessment.duration}-minute meditation script for someone who:
 - Goal: ${assessment.goal}
 - Current state: ${assessment.currentState}
 - Experience level: ${assessment.experience}
-- Time of day: ${assessment.timeOfDay}
+- Environment: ${assessment.environment || 'quiet space'}`
+
+    if (promptPrimer && promptPrimer.trim()) {
+      basePrompt += `\n- Additional customization: ${promptPrimer.trim()}`
+    }
+
+    basePrompt += `
 
 STRUCTURE REQUIRED:
 1. INTRO (30-45 seconds): Welcome and initial breathing guidance
@@ -85,9 +91,15 @@ REQUIREMENTS:
 - Speak slowly and calmly
 - Include specific breath counts (inhale for 4, hold for 4, exhale for 6)
 - Make affirmations relevant to ${assessment.goal}
-- Adapt energy level to ${assessment.timeOfDay} context
 - Consider they are feeling ${assessment.currentState}
 - Match complexity to ${assessment.experience} level
+- Adapt to their ${assessment.environment || 'quiet'} environment`
+
+    if (promptPrimer && promptPrimer.trim()) {
+      basePrompt += `\n- Incorporate the custom instructions: ${promptPrimer.trim()}`
+    }
+
+    basePrompt += `
 
 FORMAT: Return the script in three clear sections marked as:
 INTRO:
@@ -98,6 +110,8 @@ MAIN:
 
 CLOSING:
 [closing text here]`
+
+    return basePrompt
   }
 
   private parseScript(text: string, duration: number): MeditationScript {

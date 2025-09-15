@@ -121,32 +121,50 @@ export default function Dashboard() {
         {/* Saved Sessions */}
         {savedSessions.length > 0 && (
           <div className="ios-section">
-            <h2 className="ios-section-header ios-content-inset">Your Sessions</h2>
-            <div className="ios-full-width-card ios-list">
-              {savedSessions.map((session, index) => (
-                <div
-                  key={index}
-                  className="ios-list-item no-select"
-                >
-                  <div className="flex items-start justify-between flex-1">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="ios-headline mb-1 truncate" style={{color: 'var(--ios-label)'}}>{session.name}</h4>
-                      <p className="ios-subhead" style={{color: 'var(--ios-label-secondary)'}}>
-                        {session.duration} min • {session.frequency}
-                      </p>
-                      {session.description && (
-                        <p className="ios-caption mt-1 line-clamp-2" style={{color: 'var(--ios-label-tertiary)'}}>{session.description}</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => setCurrentSession(session)}
-                      className="ml-3 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg shrink-0 active:scale-95 transition-transform"
+            <div className="flex items-center justify-between ios-content-inset mb-3">
+              <h2 className="ios-section-header">Your Sessions</h2>
+              {savedSessions.length > 2 && (
+                <button className="ios-subhead text-blue-400 font-medium">
+                  View All ({savedSessions.length})
+                </button>
+              )}
+            </div>
+            <div className="ios-full-width-card">
+              <div className="max-h-32 overflow-y-auto">
+                <div className="ios-list">
+                  {savedSessions.slice(0, 2).map((session, index) => (
+                    <div
+                      key={index}
+                      className="ios-list-item no-select"
                     >
-                      ▶
-                    </button>
-                  </div>
+                      <div className="flex items-start justify-between flex-1">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="ios-headline mb-1 truncate" style={{color: 'var(--ios-label)'}}>{session.name}</h4>
+                          <p className="ios-subhead" style={{color: 'var(--ios-label-secondary)'}}>
+                            {session.duration} min • {session.frequency}
+                          </p>
+                          {session.description && (
+                            <p className="ios-caption mt-1 line-clamp-2" style={{color: 'var(--ios-label-tertiary)'}}>{session.description}</p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setCurrentSession(session)}
+                          className="ml-3 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg shrink-0 active:scale-95 transition-transform"
+                        >
+                          ▶
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {savedSessions.length > 2 && (
+                    <div className="ios-list-item text-center border-t border-gray-800">
+                      <button className="w-full py-2 ios-subhead text-blue-400 font-medium">
+                        Show {savedSessions.length - 2} More Sessions
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         )}

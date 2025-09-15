@@ -7,17 +7,18 @@ import crypto from 'crypto';
 // POST /api/scripts - Generate or retrieve cached script
 async function POST(request: NextRequest & { user: any }) {
   try {
-    const { assessment_data, session_config } = await request.json();
+    const { assessment, promptPrimer } = await request.json();
 
     // Create a hash of the assessment data to use as cache key
     const cacheKey = crypto
       .createHash('md5')
       .update(JSON.stringify({
-        goal: assessment_data.goal,
-        currentState: assessment_data.currentState,
-        duration: assessment_data.duration,
-        experience: assessment_data.experience,
-        timeOfDay: assessment_data.timeOfDay
+        goal: assessment.goal,
+        currentState: assessment.currentState,
+        duration: assessment.duration,
+        experience: assessment.experience,
+        environment: assessment.environment,
+        promptPrimer: promptPrimer || ''
       }))
       .digest('hex');
 
@@ -58,7 +59,7 @@ async function POST(request: NextRequest & { user: any }) {
     // Generate new script
     console.log('🔄 Generating new meditation script');
     const scriptGenerator = createScriptGenerator();
-    const script = await scriptGenerator.generateScript(assessment_data);
+    const script = await scriptGenerator.generateScript(assessment, promptPrimer);
 
     // Cache the generated script
     try {
@@ -80,11 +81,11 @@ async function POST(request: NextRequest & { user: any }) {
         )
         VALUES (
           ${cacheKey},
-          ${assessment_data.goal},
-          ${assessment_data.currentState},
-          ${assessment_data.duration},
-          ${assessment_data.experience},
-          ${assessment_data.timeOfDay},
+          ${assessment.goal},
+          ${assessment.currentState},
+          ${assessment.duration},
+          ${assessment.experience},
+          ${assessment.environment || 'quiet'},
           ${script.intro_text},
           ${script.main_content},
           ${script.closing_text},
