@@ -141,33 +141,20 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
   const generateScript = async () => {
     setIsGenerating(true)
     try {
-      // Import demo mode check and auth client dynamically
-      const { isDemoMode } = await import('@/lib/demoMode')
-      const isDemo = isDemoMode()
+      // Always use authenticated production endpoint
+      const { authClient } = await import('@/lib/authClient')
+      const authToken = authClient.getToken()
 
-      console.log('Script generation mode:', isDemo ? 'Demo (test endpoint)' : 'Production (authenticated)')
+      if (!authToken) {
+        throw new Error('Authentication required. Please log in.')
+      }
 
-      // For development/testing, use test endpoint without auth
-      // For production, always require authentication
-      const endpoint = isDemo ? '/api/test-scripts' : '/api/scripts'
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
       }
 
-      // Add authentication header for production
-      if (!isDemo) {
-        // Use proper auth token from authClient
-        const { authClient } = await import('@/lib/authClient')
-        const authToken = authClient.getToken()
-
-        if (!authToken) {
-          throw new Error('Authentication required. Please log in.')
-        }
-
-        headers['Authorization'] = `Bearer ${authToken}`
-      }
-
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/scripts', {
         method: 'POST',
         headers,
         body: JSON.stringify({
