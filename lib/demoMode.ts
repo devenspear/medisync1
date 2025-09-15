@@ -48,10 +48,8 @@ export const getDemoSessions = (): SessionConfig[] => [
     name: 'Morning Focus',
     description: 'Start your day with clarity',
     duration: 10,
-    frequency: 'beta',
     voice_id: 'female-1',
     layers: {
-      binaural_volume: 0.6,
       music_volume: 0.3,
       voice_volume: 0.8,
       music_type: 'ambient'
@@ -73,10 +71,8 @@ export const getDemoSessions = (): SessionConfig[] => [
     name: 'Evening Relaxation',
     description: 'Unwind after a long day',
     duration: 15,
-    frequency: 'alpha',
     voice_id: 'male-1',
     layers: {
-      binaural_volume: 0.5,
       music_volume: 0.4,
       voice_volume: 0.7,
       music_type: 'ambient'
@@ -98,10 +94,8 @@ export const getDemoSessions = (): SessionConfig[] => [
     name: 'Sleep Preparation',
     description: 'Deep rest meditation',
     duration: 20,
-    frequency: 'delta',
     voice_id: 'female-2',
     layers: {
-      binaural_volume: 0.4,
       music_volume: 0.2,
       voice_volume: 0.6,
       music_type: 'ambient'

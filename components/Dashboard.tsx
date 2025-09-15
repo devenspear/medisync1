@@ -140,7 +140,7 @@ export default function Dashboard() {
                         <div className="flex-1 min-w-0">
                           <h4 className="text-lg font-semibold text-white mb-1 truncate">{session.name}</h4>
                           <p className="text-gray-400">
-                            {session.duration} min • {session.frequency}
+                            {session.duration} min • {session.layers.music_type}
                           </p>
                           {session.description && (
                             <p className="text-sm text-gray-500 mt-1 line-clamp-2">{session.description}</p>

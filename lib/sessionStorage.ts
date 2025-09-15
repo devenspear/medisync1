@@ -14,7 +14,6 @@ export class SessionStorage {
           name: sessionConfig.name,
           description: sessionConfig.description,
           duration: sessionConfig.duration,
-          frequency: sessionConfig.frequency,
           voice_id: sessionConfig.voice_id,
           layers: sessionConfig.layers,
           assessment_data: sessionConfig.assessment_data,

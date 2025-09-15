@@ -333,9 +333,9 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         wisdomSource: selectedWisdom,
         selectedFeelings: selectedFeelings,
         userPrimer: promptPrimer,
-        selectedPrimaryTheme,
-        selectedAtmosphericElements,
-        selectedSoundscapeJourney
+        selectedPrimaryTheme: selectedPrimaryTheme || undefined,
+        selectedAtmosphericElements: selectedAtmosphericElements || undefined,
+        selectedSoundscapeJourney: selectedSoundscapeJourney || undefined
       },
     }
     onComplete(sessionConfig)

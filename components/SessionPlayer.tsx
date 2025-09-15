@@ -86,8 +86,34 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       // Generate the meditation script via API
       const script = await generateScript(session.assessment_data)
 
+      setLoadingMessage('🎵 Generating background music...')
+      setLoadingProgress(0.2)
+
+      // Generate background music if assessment data is available
+      if (session.assessment_data.selectedPrimaryTheme) {
+        try {
+          const musicOptions = {
+            duration: session.duration,
+            primaryTheme: session.assessment_data.selectedPrimaryTheme,
+            atmosphericElements: session.assessment_data.selectedAtmosphericElements || [],
+            soundscapeJourney: session.assessment_data.selectedSoundscapeJourney || {
+              displayName: 'Gentle Emergence',
+              structure: 'Starting with soft, ambient tones that gradually build in complexity'
+            }
+          }
+
+          const musicResult = await musicSynthesis.current.generateMusicWithFallback(musicOptions)
+          if (musicResult?.audioUrl) {
+            const musicAudio = await audioEngine.current.playMusic(musicResult.audioUrl, session.layers.music_volume)
+            musicAudio.pause() // Don't start playing yet
+          }
+        } catch (musicError) {
+          console.warn('Music generation failed, continuing without background music:', musicError)
+        }
+      }
+
       setLoadingMessage('🎙️ Creating voice audio with ElevenLabs...')
-      setLoadingProgress(0.3)
+      setLoadingProgress(0.4)
 
       // Generate voice audio (if using ElevenLabs)
       if (!(voiceSynthesis.current instanceof FallbackVoiceSynthesis)) {
@@ -99,7 +125,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
           script.closing_text,
           session.voice_id,
           (progress) => {
-            const overallProgress = 0.3 + progress * 0.4
+            const overallProgress = 0.4 + progress * 0.4
             setLoadingProgress(overallProgress)
 
             if (progress < 0.4) {
@@ -124,7 +150,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
         setLoadingMessage('🔊 Using browser speech synthesis...')
       }
 
-      setLoadingMessage('🎵 Setting up binaural beats & ambient audio...')
+      setLoadingMessage('🔊 Setting up audio playback...')
       setLoadingProgress(0.8)
 
       // Initialize audio engine
@@ -145,11 +171,11 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
     try {
       setPhase('playing')
 
-      // Start binaural beats
-      await audioEngine.current.startBinauralBeats(session.frequency, volumes.binaural_volume)
-
-      // Start ambient music
-      await audioEngine.current.startAmbientMusic(volumes.music_volume)
+      // Resume music if it was set up during initialization
+      const musicAudio = audioEngine.current.getMusicAudio()
+      if (musicAudio) {
+        await musicAudio.play()
+      }
 
       // Start voice guidance (either ElevenLabs audio or fallback TTS)
       if (audioElementsRef.current.intro) {
@@ -177,8 +203,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
   const pauseSession = () => {
     setPhase('paused')
-    audioEngine.current.stopBinauralBeats()
-    audioEngine.current.stopAmbientMusic()
+    audioEngine.current.pauseAll()
 
     Object.values(audioElementsRef.current).forEach(audio => {
       if (audio) audio.pause()
@@ -196,8 +221,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
   const stopSession = () => {
     setPhase('completed')
-    audioEngine.current.stopBinauralBeats()
-    audioEngine.current.stopAmbientMusic()
+    audioEngine.current.stopAll()
 
     Object.values(audioElementsRef.current).forEach(audio => {
       if (audio) {
@@ -232,8 +256,8 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
   }
 
   const cleanup = () => {
-    audioEngine.current.stopBinauralBeats()
-    audioEngine.current.stopAmbientMusic()
+    audioEngine.current.stopAll()
+    musicSynthesis.current.cleanupAll()
 
     Object.values(audioElementsRef.current).forEach(audio => {
       if (audio) {
@@ -253,9 +277,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
     // Apply volume changes in real-time
     if (phase === 'playing') {
-      if (layer === 'binaural_volume') {
-        audioEngine.current.setBinauralVolume(value)
-      } else if (layer === 'music_volume') {
+      if (layer === 'music_volume') {
         audioEngine.current.setMusicVolume(value)
       } else if (layer === 'voice_volume') {
         Object.values(audioElementsRef.current).forEach(audio => {
@@ -319,7 +341,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
           </button>
           <div className="text-center">
             <h1 className="text-lg font-bold text-white">{session.name}</h1>
-            <p className="text-xs text-gray-400">{session.frequency} • {session.duration} min</p>
+            <p className="text-xs text-gray-400">{session.layers.music_type} • {session.duration} min</p>
           </div>
           <div className="w-9 h-9"></div>
         </div>
@@ -418,23 +440,6 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
         <h3 className="text-lg font-bold text-white mb-4 text-center">Audio Mix</h3>
 
         <div className="space-y-6 max-w-sm mx-auto">
-          {/* Binaural Beats Volume */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <label className="text-white font-medium">🎵 Binaural Beats</label>
-              <span className="text-gray-400 text-sm">{Math.round(volumes.binaural_volume * 100)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={volumes.binaural_volume}
-              onChange={(e) => handleVolumeChange('binaural_volume', parseFloat(e.target.value))}
-              className="ios-slider"
-            />
-          </div>
-
           {/* Music Volume */}
           <div>
             <div className="flex justify-between items-center mb-3">

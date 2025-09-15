@@ -182,8 +182,8 @@ export class AudioEngineV2 {
   }
 
   isPlaying(): boolean {
-    return (this.voiceAudio && !this.voiceAudio.paused) ||
-           (this.musicAudio && !this.musicAudio.paused)
+    return !!(this.voiceAudio && !this.voiceAudio.paused) ||
+           !!(this.musicAudio && !this.musicAudio.paused)
   }
 
   getVoiceAudio(): HTMLAudioElement | null {
