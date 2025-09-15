@@ -160,26 +160,92 @@ export class Auth {
 // Simple middleware for App Router API routes
 export function withAuth(handler: any) {
   return async (request: NextRequest, ...args: any[]) => {
+    const debugInfo = {
+      timestamp: new Date().toISOString(),
+      method: request.method,
+      url: request.url,
+      pathname: request.nextUrl.pathname,
+      hasAuthHeader: !!request.headers.get('authorization'),
+      authHeaderPreview: request.headers.get('authorization')?.substring(0, 20) + '...',
+      allHeaders: Object.fromEntries(request.headers.entries()),
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        VERCEL_ENV: process.env.VERCEL_ENV,
+        JWT_SECRET_SET: !!process.env.JWT_SECRET,
+      }
+    };
+
+    console.log('🔒 AUTH MIDDLEWARE START:', JSON.stringify(debugInfo, null, 2));
+
     try {
       const authHeader = request.headers.get('authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+        console.log('🚨 AUTH FAILED: No valid authorization header');
+        console.log('  - Auth header exists:', !!authHeader);
+        console.log('  - Auth header value:', authHeader);
+        console.log('  - All headers:', Object.fromEntries(request.headers.entries()));
+
+        return NextResponse.json({
+          error: 'No token provided',
+          debug: {
+            authHeaderExists: !!authHeader,
+            authHeaderValue: authHeader,
+            expectedFormat: 'Bearer <token>'
+          }
+        }, { status: 401 });
       }
 
       const token = authHeader.substring(7);
+      console.log('🔑 TOKEN EXTRACTED:', {
+        tokenLength: token.length,
+        tokenPreview: token.substring(0, 20) + '...',
+        fullToken: token // REMOVE THIS IN PRODUCTION
+      });
+
       const user = await Auth.getUserFromToken(token);
 
       if (!user) {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+        console.log('🚨 AUTH FAILED: Invalid token or user not found');
+        console.log('  - Token:', token);
+
+        // Try to decode the token to see what's wrong
+        try {
+          const decoded = jwt.verify(token, JWT_SECRET);
+          console.log('  - Token decodes successfully:', decoded);
+          console.log('  - But user lookup failed');
+        } catch (jwtError) {
+          console.log('  - Token decode failed:', jwtError instanceof Error ? jwtError.message : jwtError);
+        }
+
+        return NextResponse.json({
+          error: 'Invalid token',
+          debug: {
+            tokenLength: token.length,
+            tokenPreview: token.substring(0, 20) + '...'
+          }
+        }, { status: 401 });
       }
+
+      console.log('✅ AUTH SUCCESS:', {
+        userId: user.id,
+        userEmail: user.email
+      });
 
       // Add user to request
       (request as NextRequest & { user: AuthUser }).user = user;
 
       return handler(request as NextRequest & { user: AuthUser }, ...args);
     } catch (error) {
-      console.error('Auth middleware error:', error);
-      return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
+      console.error('🚨 AUTH MIDDLEWARE ERROR:', error);
+      console.error('🚨 ERROR STACK:', error instanceof Error ? error.stack : 'No stack trace');
+
+      return NextResponse.json({
+        error: 'Authentication failed',
+        debug: {
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          errorType: error instanceof Error ? error.constructor.name : typeof error
+        }
+      }, { status: 500 });
     }
   };
 }
