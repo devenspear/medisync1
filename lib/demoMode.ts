@@ -45,7 +45,11 @@ export const getDemoSessions = (): SessionConfig[] => [
       currentState: 'tired',
       duration: 10,
       experience: 'intermediate',
-      timeOfDay: 'morning'
+      timeOfDay: 'morning',
+      environment: 'quiet',
+      wisdomSource: 'Default/Universal',
+      selectedFeelings: ['tired'],
+      userPrimer: 'Demo morning focus session'
     }
   },
   {
@@ -66,7 +70,11 @@ export const getDemoSessions = (): SessionConfig[] => [
       currentState: 'stressed',
       duration: 15,
       experience: 'beginner',
-      timeOfDay: 'evening'
+      timeOfDay: 'evening',
+      environment: 'quiet',
+      wisdomSource: 'Default/Universal',
+      selectedFeelings: ['stressed'],
+      userPrimer: 'Demo evening relaxation session'
     }
   },
   {
@@ -87,7 +95,11 @@ export const getDemoSessions = (): SessionConfig[] => [
       currentState: 'anxious',
       duration: 20,
       experience: 'advanced',
-      timeOfDay: 'bedtime'
+      timeOfDay: 'bedtime',
+      environment: 'quiet',
+      wisdomSource: 'Default/Universal',
+      selectedFeelings: ['anxious'],
+      userPrimer: 'Demo sleep preparation session'
     }
   }
 ]

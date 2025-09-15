@@ -7,9 +7,14 @@ export interface AssessmentData {
   challenges?: string
   meditationStyle?: string
   environment?: string
+  // New fields for master prompt template
+  wisdomSource: string
+  selectedFeelings: string[]
+  userPrimer: string
 }
 
 export interface MeditationScript {
+  title?: string
   intro_text: string
   main_content: string
   closing_text: string
@@ -25,9 +30,35 @@ export class ScriptGenerator {
   }
 
   async generateScript(assessment: AssessmentData, promptPrimer?: string): Promise<MeditationScript> {
-    const prompt = this.constructPrompt(assessment, promptPrimer)
+    const { promptTemplateManager } = await import('./promptTemplate')
 
     try {
+      // Calculate appropriate word count for duration
+      const maxWordCount = promptTemplateManager.calculateMaxWordCount(assessment.duration)
+
+      // Prepare variables for the master prompt template
+      const wisdomSnippet = promptTemplateManager.getWisdomSnippet(assessment.wisdomSource || 'Default/Universal')
+
+      const promptVariables = {
+        Wisdom_Source_Name: assessment.wisdomSource || 'Default/Universal',
+        Wisdom_Snippet: wisdomSnippet,
+        User_Primer: assessment.userPrimer || promptPrimer || '',
+        User_Goal: assessment.goal,
+        User_Feelings_List: assessment.selectedFeelings?.join(', ') || '',
+        Max_Word_Count: maxWordCount
+      }
+
+      // Generate the complete prompt from template
+      const prompt = await promptTemplateManager.generatePrompt(promptVariables)
+
+      console.log('🔄 Generating meditation script with master prompt template')
+      console.log('Variables:', {
+        goal: assessment.goal,
+        wisdomSource: assessment.wisdomSource,
+        feelings: assessment.selectedFeelings,
+        wordCount: maxWordCount
+      })
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -38,27 +69,26 @@ export class ScriptGenerator {
           model: 'gpt-4',
           messages: [
             {
-              role: 'system',
-              content: 'You are an expert meditation guide creating personalized, calming meditation scripts. Always speak in second person (you, your). Use gentle, soothing language. Include specific breathing instructions and visualization techniques.'
-            },
-            {
               role: 'user',
               content: prompt
             }
           ],
-          max_tokens: 1000,
+          max_tokens: Math.min(maxWordCount * 2, 2000), // Allow some buffer for tokens
           temperature: 0.7,
         }),
       })
 
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('OpenAI API error:', response.status, errorText)
         throw new Error(`OpenAI API error: ${response.status}`)
       }
 
       const data = await response.json()
       const generatedText = data.choices[0].message.content
 
-      return this.parseScript(generatedText, assessment.duration)
+      console.log('✅ Successfully generated script with master prompt template')
+      return this.parseScriptWithTitle(generatedText, assessment.duration)
 
     } catch (error) {
       console.error('Script generation failed:', error)
@@ -115,8 +145,31 @@ CLOSING:
     return basePrompt
   }
 
-  private parseScript(text: string, duration: number): MeditationScript {
-    const sections = text.split(/(?:INTRO:|MAIN:|CLOSING:)/).map(s => s.trim()).filter(Boolean)
+  private parseScriptWithTitle(text: string, duration: number): MeditationScript {
+    const lines = text.split('\n').filter(line => line.trim())
+
+    // Extract title (first line)
+    let title = ''
+    let contentStartIndex = 0
+
+    if (lines.length > 0) {
+      const firstLine = lines[0].trim()
+      // Check if first line looks like a title (not starting with common script words)
+      if (!firstLine.toLowerCase().startsWith('welcome') &&
+          !firstLine.toLowerCase().startsWith('find') &&
+          !firstLine.toLowerCase().startsWith('begin') &&
+          firstLine.length < 100) {
+        title = firstLine.replace(/^#+\s*/, '').replace(/^\*\*|\*\*$/g, '').trim()
+        contentStartIndex = 1
+      }
+    }
+
+    // Get the remaining content for parsing
+    const contentLines = lines.slice(contentStartIndex)
+    const contentText = contentLines.join('\n')
+
+    // Try to parse structured sections first
+    const sections = contentText.split(/(?:INTRO:|MAIN:|CLOSING:)/).map(s => s.trim()).filter(Boolean)
 
     let intro = ''
     let main = ''
@@ -127,22 +180,39 @@ CLOSING:
       main = sections[1]
       closing = sections[2]
     } else {
-      // Fallback parsing if format isn't followed
-      const paragraphs = text.split('\n\n').filter(p => p.trim())
-      intro = paragraphs[0] || ''
-      main = paragraphs.slice(1, -1).join('\n\n') || ''
-      closing = paragraphs[paragraphs.length - 1] || ''
+      // Fallback parsing - split content into three parts
+      const paragraphs = contentText.split('\n\n').filter(p => p.trim())
+      if (paragraphs.length >= 3) {
+        // Use first 15%, middle 60%, last 25% approach
+        const introCount = Math.max(1, Math.floor(paragraphs.length * 0.15))
+        const closingCount = Math.max(1, Math.floor(paragraphs.length * 0.25))
+
+        intro = paragraphs.slice(0, introCount).join('\n\n')
+        main = paragraphs.slice(introCount, -closingCount).join('\n\n')
+        closing = paragraphs.slice(-closingCount).join('\n\n')
+      } else {
+        // Very short content, distribute as best as possible
+        intro = paragraphs[0] || ''
+        main = paragraphs.slice(1, -1).join('\n\n') || paragraphs[1] || ''
+        closing = paragraphs[paragraphs.length - 1] || ''
+      }
     }
 
     const totalWords = this.countWords(intro + main + closing)
 
     return {
+      title: title || undefined,
       intro_text: intro,
       main_content: main,
       closing_text: closing,
       total_words: totalWords,
       estimated_duration: duration
     }
+  }
+
+  private parseScript(text: string, duration: number): MeditationScript {
+    // Legacy method for backward compatibility
+    return this.parseScriptWithTitle(text, duration)
   }
 
   private countWords(text: string): number {

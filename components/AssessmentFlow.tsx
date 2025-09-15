@@ -3,15 +3,8 @@
 import { useState } from 'react'
 import { type SessionConfig, type AssessmentData } from '@/lib/store'
 import { createVoiceSynthesis } from '@/lib/voiceSynthesis'
-
-const GOALS = [
-  { id: 'relaxation', label: 'Relaxation & Stress Relief', icon: '🧘‍♀️' },
-  { id: 'focus', label: 'Focus & Concentration', icon: '🎯' },
-  { id: 'sleep', label: 'Better Sleep', icon: '😴' },
-  { id: 'anxiety', label: 'Reduce Anxiety', icon: '💚' },
-  { id: 'creativity', label: 'Boost Creativity', icon: '💡' },
-  { id: 'energy', label: 'Increase Energy', icon: '⚡' },
-]
+// Import only the data structures, not the template manager
+import { WISDOM_SOURCES, FEELING_OPTIONS, GOAL_OPTIONS } from '@/lib/promptTemplate'
 
 const VOICES = [
   { id: 'female-1', name: 'Kelli', description: 'Warm & comforting meditation voice', icon: '🎙️' },
@@ -66,8 +59,11 @@ interface Props {
 }
 
 export default function AssessmentFlow({ onComplete, onCancel }: Props) {
-  const [step, setStep] = useState(1) // 1: Goal, 2: Survey, 3: Duration, 4: Primer, 5: Generating, 6: Review, 7: Voice
+  // 1: Goal, 2: Wisdom, 3: Feelings, 4: Survey, 5: Duration, 6: Primer, 7: Generating, 8: Review, 9: Voice
+  const [step, setStep] = useState(1)
   const [selectedGoal, setSelectedGoal] = useState('')
+  const [selectedWisdom, setSelectedWisdom] = useState('Default/Universal')
+  const [selectedFeelings, setSelectedFeelings] = useState<string[]>([])
   const [selectedVoice, setSelectedVoice] = useState('female-1')
   const [selectedDuration, setSelectedDuration] = useState(3)
   const [promptPrimer, setPromptPrimer] = useState('')
@@ -81,6 +77,9 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
     experience: '',
     timeOfDay: '',
     environment: '',
+    wisdomSource: 'Default/Universal',
+    selectedFeelings: [],
+    userPrimer: '',
   })
 
   const handleGoalSelect = (goal: string) => {
@@ -94,6 +93,28 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
     }
   }
 
+  const handleWisdomSelect = (wisdom: string) => {
+    setSelectedWisdom(wisdom)
+    setAssessment(prev => ({ ...prev, wisdomSource: wisdom }))
+  }
+
+  const handleContinueFromWisdom = () => {
+    setStep(3)
+  }
+
+  const handleFeelingToggle = (feeling: string) => {
+    const newFeelings = selectedFeelings.includes(feeling)
+      ? selectedFeelings.filter(f => f !== feeling)
+      : [...selectedFeelings, feeling]
+
+    setSelectedFeelings(newFeelings)
+    setAssessment(prev => ({ ...prev, selectedFeelings: newFeelings }))
+  }
+
+  const handleContinueFromFeelings = () => {
+    setStep(4)
+  }
+
   const handleSurveyAnswer = (questionId: string, answer: string) => {
     setAssessment(prev => ({ ...prev, [questionId]: answer }))
   }
@@ -102,18 +123,18 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
     const requiredAnswers = ['currentState', 'experience', 'environment']
     const hasAllAnswers = requiredAnswers.every(key => assessment[key as keyof AssessmentData])
     if (hasAllAnswers) {
-      setStep(3)
+      setStep(5)
     }
   }
 
   const handleDurationSelect = (duration: number) => {
     setSelectedDuration(duration)
     setAssessment(prev => ({ ...prev, duration }))
-    setStep(4)
+    setStep(6)
   }
 
   const handleContinueFromPrimer = () => {
-    setStep(5)
+    setStep(7)
     generateScript()
   }
 
@@ -124,29 +145,43 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          assessment: { ...assessment, goal: selectedGoal, duration: selectedDuration },
+          assessment: {
+            ...assessment,
+            goal: selectedGoal,
+            duration: selectedDuration,
+            wisdomSource: selectedWisdom,
+            selectedFeelings: selectedFeelings,
+            userPrimer: promptPrimer
+          },
           promptPrimer
         })
       })
 
       if (response.ok) {
         const { script } = await response.json()
-        setGeneratedScript(script.intro_text + '\\n\\n' + script.main_content + '\\n\\n' + script.closing_text)
-        setStep(6)
+        let scriptText = ''
+
+        if (script.title) {
+          scriptText += script.title + '\\n\\n'
+        }
+        scriptText += script.intro_text + '\\n\\n' + script.main_content + '\\n\\n' + script.closing_text
+
+        setGeneratedScript(scriptText)
+        setStep(8)
       } else {
         throw new Error('Failed to generate script')
       }
     } catch (error) {
       console.error('Script generation failed:', error)
       alert('Failed to generate meditation script. Please try again.')
-      setStep(4)
+      setStep(6)
     } finally {
       setIsGenerating(false)
     }
   }
 
   const handleContinueFromReview = () => {
-    setStep(7)
+    setStep(9)
   }
 
   const handleVoicePreview = async (voiceId: string) => {
@@ -199,8 +234,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
   const handleCreateSession = () => {
     const sessionConfig: SessionConfig = {
       name: `${selectedGoal.charAt(0).toUpperCase() + selectedGoal.slice(1)} Session`,
-      description: `10 minute ${selectedGoal} session with AI-generated guidance`,
-      duration: 10,
+      description: `${selectedDuration} minute ${selectedGoal} session with AI-generated guidance`,
+      duration: selectedDuration,
       frequency: 'alpha',
       voice_id: selectedVoice,
       layers: {
@@ -209,7 +244,13 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         voice_volume: 0.8,
         music_type: 'ambient',
       },
-      assessment_data: { ...assessment, goal: selectedGoal },
+      assessment_data: {
+        ...assessment,
+        goal: selectedGoal,
+        wisdomSource: selectedWisdom,
+        selectedFeelings: selectedFeelings,
+        userPrimer: promptPrimer
+      },
     }
     onComplete(sessionConfig)
   }
@@ -227,12 +268,14 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
           </button>
           <div className="ios-nav-title">
             {step === 1 && 'Choose Goal'}
-            {step === 2 && 'About You'}
-            {step === 3 && 'Duration'}
-            {step === 4 && 'Customize'}
-            {step === 5 && 'Generating...'}
-            {step === 6 && 'Review Script'}
-            {step === 7 && 'Choose Voice'}
+            {step === 2 && 'Wisdom Source'}
+            {step === 3 && 'Feelings'}
+            {step === 4 && 'About You'}
+            {step === 5 && 'Duration'}
+            {step === 6 && 'Customize'}
+            {step === 7 && 'Generating...'}
+            {step === 8 && 'Review Script'}
+            {step === 9 && 'Choose Voice'}
           </div>
           <div className="w-16"></div>
         </div>
@@ -240,7 +283,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         {/* Progress Indicator */}
         <div className="px-6 py-2">
           <div className="flex space-x-1">
-            {[1, 2, 3, 4, 5, 6, 7].map((stepNum) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((stepNum) => (
               <div
                 key={stepNum}
                 className={`h-1 flex-1 rounded-full transition-colors ${
@@ -260,31 +303,35 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               <>
                 <div className="text-center ios-section">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
-                    What's your goal?
+                    What's your intention?
                   </h3>
                   <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
-                    Choose what you'd like to focus on in this session.
+                    Choose your primary focus for this meditation.
                   </p>
                 </div>
 
                 <div className="ios-list mb-6">
-                  {GOALS.map((goal) => (
+                  {GOAL_OPTIONS.map((goal) => (
                     <button
-                      key={goal.id}
-                      onClick={() => handleGoalSelect(goal.id)}
+                      key={goal.goal}
+                      onClick={() => handleGoalSelect(goal.goal)}
                       className={`ios-list-item no-select transition-all border-2 ${
-                        selectedGoal === goal.id
+                        selectedGoal === goal.goal
                           ? 'border-blue-400 bg-blue-500/10'
                           : 'border-transparent hover:border-blue-400'
                       }`}
                     >
                       <div className="flex items-center space-x-4 w-full">
-                        <span className="text-2xl">{goal.icon}</span>
-                        <span className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
-                          {goal.label}
-                        </span>
-                        {selectedGoal === goal.id && (
-                          <span className="ml-auto text-blue-400 text-xl">✓</span>
+                        <div className="text-left flex-1">
+                          <div className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
+                            {goal.goal}
+                          </div>
+                          <div className="ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
+                            {goal.coreFocus}
+                          </div>
+                        </div>
+                        {selectedGoal === goal.goal && (
+                          <span className="text-blue-400 text-xl">✓</span>
                         )}
                       </div>
                     </button>
@@ -302,8 +349,112 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 2: Survey Questions */}
+            {/* Step 2: Wisdom Source Selection */}
             {step === 2 && (
+              <>
+                <div className="text-center ios-section mb-6">
+                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                    Choose Your Wisdom Source
+                  </h3>
+                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                    Select the philosophical foundation for your meditation.
+                  </p>
+                </div>
+
+                <div className="ios-list mb-6">
+                  {WISDOM_SOURCES.map((source) => (
+                    <button
+                      key={source.internalKeyword}
+                      onClick={() => handleWisdomSelect(source.internalKeyword)}
+                      className={`ios-list-item no-select transition-all border-2 ${
+                        selectedWisdom === source.internalKeyword
+                          ? 'border-blue-400 bg-blue-500/10'
+                          : 'border-transparent hover:border-blue-400'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-4 w-full">
+                        <div className="text-left flex-1">
+                          <div className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
+                            {source.displayName}
+                          </div>
+                          <div className="ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
+                            {source.conceptSnippet}
+                          </div>
+                        </div>
+                        {selectedWisdom === source.internalKeyword && (
+                          <span className="text-blue-400 text-xl">✓</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleContinueFromWisdom}
+                  className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform"
+                >
+                  <span className="ios-title-3 text-white">Continue</span>
+                </button>
+              </>
+            )}
+
+            {/* Step 3: Feelings to Transcend (Checkboxes) */}
+            {step === 3 && (
+              <>
+                <div className="text-center ios-section mb-6">
+                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                    What would you like to transform?
+                  </h3>
+                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                    Select any feelings you'd like to transcend. (Optional)
+                  </p>
+                </div>
+
+                <div className="ios-list mb-6">
+                  {FEELING_OPTIONS.map((feeling) => (
+                    <button
+                      key={feeling.feeling}
+                      onClick={() => handleFeelingToggle(feeling.feeling)}
+                      className={`ios-list-item no-select transition-all border-2 ${
+                        selectedFeelings.includes(feeling.feeling)
+                          ? 'border-blue-400 bg-blue-500/10'
+                          : 'border-transparent hover:border-blue-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className="text-left flex-1">
+                          <div className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
+                            {feeling.feeling}
+                          </div>
+                          <div className="ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
+                            Transforms to: {feeling.antidoteThemes}
+                          </div>
+                        </div>
+                        <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                          selectedFeelings.includes(feeling.feeling)
+                            ? 'bg-blue-500 border-blue-500'
+                            : 'border-gray-400'
+                        }`}>
+                          {selectedFeelings.includes(feeling.feeling) && (
+                            <span className="text-white text-sm">✓</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleContinueFromFeelings}
+                  className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform"
+                >
+                  <span className="ios-title-3 text-white">Continue</span>
+                </button>
+              </>
+            )}
+
+            {/* Step 4: Survey Questions */}
+            {step === 4 && (
               <>
                 <div className="text-center ios-section mb-6">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
@@ -361,8 +512,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 3: Duration Selection */}
-            {step === 3 && (
+            {/* Step 5: Duration Selection */}
+            {step === 5 && (
               <>
                 <div className="text-center ios-section mb-6">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
@@ -402,12 +553,12 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 4: Prompt Primer */}
-            {step === 4 && (
+            {/* Step 6: Prompt Primer */}
+            {step === 6 && (
               <>
                 <div className="text-center ios-section mb-6">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
-                    Customize
+                    Personal Touch
                   </h3>
                   <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
                     Add any specific details to personalize your meditation.
@@ -422,7 +573,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                     <textarea
                       value={promptPrimer}
                       onChange={(e) => setPromptPrimer(e.target.value)}
-                      placeholder="e.g., Focus on gratitude, include nature sounds, help with work stress..."
+                      placeholder="e.g., Focus on gratitude, include nature imagery, help with work stress..."
                       maxLength={200}
                       className="w-full h-24 p-4 ios-background-secondary rounded-xl ios-body resize-none"
                       style={{
@@ -442,8 +593,12 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                       Your Meditation Summary
                     </h4>
                     <div className="space-y-2 ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
-                      <div>Goal: {GOALS.find(g => g.id === selectedGoal)?.label}</div>
+                      <div>Goal: {selectedGoal}</div>
+                      <div>Wisdom: {WISDOM_SOURCES.find(w => w.internalKeyword === selectedWisdom)?.displayName}</div>
                       <div>Duration: {selectedDuration} minutes</div>
+                      {selectedFeelings.length > 0 && (
+                        <div>Transforming: {selectedFeelings.join(', ')}</div>
+                      )}
                       <div>Current State: {SURVEY_QUESTIONS[0].options.find(o => o.id === assessment.currentState)?.label}</div>
                       <div>Experience: {SURVEY_QUESTIONS[1].options.find(o => o.id === assessment.experience)?.label}</div>
                       <div>Environment: {SURVEY_QUESTIONS[2].options.find(o => o.id === assessment.environment)?.label}</div>
@@ -465,8 +620,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 5: Generating Script */}
-            {step === 5 && (
+            {/* Step 7: Generating Script */}
+            {step === 7 && (
               <>
                 <div className="text-center ios-section">
                   <div className="w-16 h-16 mx-auto mb-4 bg-blue-500/20 rounded-full flex items-center justify-center">
@@ -476,14 +631,14 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                     Creating Your Meditation
                   </h3>
                   <p className="ios-subhead" style={{color: 'var(--ios-label-secondary)'}}>
-                    Our AI is crafting a personalized script based on your preferences...
+                    Our AI is crafting a personalized script using the master prompt template...
                   </p>
                 </div>
               </>
             )}
 
-            {/* Step 6: Review Script */}
-            {step === 6 && (
+            {/* Step 8: Review Script */}
+            {step === 8 && (
               <>
                 <div className="text-center ios-section mb-6">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
@@ -509,8 +664,8 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
               </>
             )}
 
-            {/* Step 7: Voice Selection */}
-            {step === 7 && (
+            {/* Step 9: Voice Selection */}
+            {step === 9 && (
               <>
                 <div className="text-center ios-section mb-6">
                   <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>

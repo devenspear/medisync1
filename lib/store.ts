@@ -12,6 +12,10 @@ export interface AssessmentData {
   challenges?: string
   meditationStyle?: string
   environment?: string
+  // New fields for master prompt template
+  wisdomSource: string
+  selectedFeelings: string[]
+  userPrimer: string
 }
 
 export interface AudioLayers {
