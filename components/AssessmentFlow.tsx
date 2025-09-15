@@ -341,17 +341,17 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
   }
 
   return (
-    <div className="ios-page">
-      <div className="ios-safe-content">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+      <div className="flex flex-col h-screen">
         {/* Header */}
-        <div className="ios-nav-bar">
+        <div className="flex items-center justify-between px-6 py-4 bg-gray-900/95 backdrop-blur-sm">
           <button
             onClick={step === 1 ? onCancel : () => setStep(step - 1)}
-            className="ios-nav-button"
+            className="px-4 py-2 text-blue-500 font-medium text-lg active:scale-95 transition-transform"
           >
             {step === 1 ? 'Cancel' : '← Back'}
           </button>
-          <div className="ios-nav-title">
+          <div className="text-lg font-semibold text-white">
             {step === 1 && 'Choose Goal'}
             {step === 2 && 'Wisdom Source'}
             {step === 3 && 'Feelings'}
@@ -384,7 +384,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
 
         {/* Content */}
         <div className="flex-1 px-6 py-6 flex flex-col">
-          <div className="ios-card p-6 flex-1">
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-3xl p-6 flex-1 border border-gray-700/50">
 
             {/* Step 1: Goal Selection */}
             {step === 1 && (
@@ -507,9 +507,9 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
 
                 <button
                   onClick={handleContinueFromFeelings}
-                  className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform"
+                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
                 >
-                  <span className="ios-title-3 text-white">Continue</span>
+                  Continue
                 </button>
               </>
             )}
@@ -740,18 +740,18 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {/* Step 9: Prompt Primer */}
             {step === 9 && (
               <>
-                <div className="text-center ios-section mb-6">
-                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     Personal Touch
                   </h3>
-                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                  <p className="text-gray-400 text-lg">
                     Add any specific details to personalize your meditation.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block ios-headline font-medium mb-2" style={{color: 'var(--ios-label)'}}>
+                    <label className="block text-lg font-medium mb-3 text-white">
                       Custom Instructions (Optional)
                     </label>
                     <textarea
@@ -759,45 +759,62 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                       onChange={(e) => setPromptPrimer(e.target.value)}
                       placeholder="e.g., Focus on gratitude, include nature imagery, help with work stress..."
                       maxLength={200}
-                      className="w-full h-24 p-4 ios-background-secondary rounded-xl ios-body resize-none"
-                      style={{
-                        color: 'var(--ios-label)',
-                        border: '1px solid var(--ios-separator)'
-                      }}
+                      className="w-full h-24 p-4 bg-gray-800/50 border border-gray-600 rounded-2xl text-white text-base resize-none focus:border-blue-500 focus:outline-none transition-colors"
                     />
                     <div className="mt-2 text-right">
-                      <span className="ios-caption" style={{color: 'var(--ios-label-tertiary)'}}>
+                      <span className="text-sm text-gray-400">
                         {promptPrimer.length}/200
                       </span>
                     </div>
                   </div>
 
-                  <div className="ios-card p-4">
-                    <h4 className="ios-headline font-medium mb-2" style={{color: 'var(--ios-label)'}}>
+                  <div className="bg-gray-800/50 border border-gray-600 rounded-2xl p-6">
+                    <h4 className="text-lg font-semibold mb-4 text-white">
                       Your Meditation Summary
                     </h4>
-                    <div className="space-y-2 ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
-                      <div>Goal: {selectedGoal}</div>
-                      <div>Wisdom: {WISDOM_SOURCES.find(w => w.internalKeyword === selectedWisdom)?.displayName}</div>
-                      <div>Duration: {selectedDuration} minutes</div>
+                    <div className="space-y-3 text-sm text-gray-300">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Goal:</span>
+                        <span>{selectedGoal}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Wisdom:</span>
+                        <span>{WISDOM_SOURCES.find(w => w.internalKeyword === selectedWisdom)?.displayName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Duration:</span>
+                        <span>{selectedDuration} minutes</span>
+                      </div>
                       {selectedFeelings.length > 0 && (
-                        <div>Transforming: {selectedFeelings.join(', ')}</div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Transforming:</span>
+                          <span>{selectedFeelings.join(', ')}</span>
+                        </div>
                       )}
-                      <div>Current State: {SURVEY_QUESTIONS[0].options.find(o => o.id === assessment.currentState)?.label}</div>
-                      <div>Experience: {SURVEY_QUESTIONS[1].options.find(o => o.id === assessment.experience)?.label}</div>
-                      <div>Environment: {SURVEY_QUESTIONS[2].options.find(o => o.id === assessment.environment)?.label}</div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Current State:</span>
+                        <span>{SURVEY_QUESTIONS[0].options.find(o => o.id === assessment.currentState)?.label}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Experience:</span>
+                        <span>{SURVEY_QUESTIONS[1].options.find(o => o.id === assessment.experience)?.label}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Environment:</span>
+                        <span>{SURVEY_QUESTIONS[2].options.find(o => o.id === assessment.environment)?.label}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-8">
                   <button
                     onClick={handleContinueFromPrimer}
-                    className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform"
+                    className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
                   >
                     <div className="flex items-center justify-center space-x-2">
                       <span className="text-xl">✨</span>
-                      <span className="ios-title-3 text-white">Generate Script</span>
+                      <span>Generate Script</span>
                     </div>
                   </button>
                 </div>
@@ -819,26 +836,26 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {/* Step 11: Review Script */}
             {step === 11 && (
               <>
-                <div className="text-center ios-section mb-6">
-                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     Review Script
                   </h3>
-                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                  <p className="text-gray-400 text-lg">
                     Your personalized meditation script is ready.
                   </p>
                 </div>
 
-                <div className="ios-card p-4 mb-6 max-h-64 overflow-y-auto">
-                  <div className="ios-body leading-relaxed whitespace-pre-line" style={{color: 'var(--ios-label)'}}>
+                <div className="bg-gray-800/50 border border-gray-600 rounded-2xl p-6 mb-8 max-h-64 overflow-y-auto">
+                  <div className="text-white leading-relaxed whitespace-pre-line text-base">
                     {generatedScript}
                   </div>
                 </div>
 
                 <button
                   onClick={handleContinueFromReview}
-                  className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform"
+                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
                 >
-                  <span className="ios-title-3 text-white">Choose Voice</span>
+                  Choose Voice
                 </button>
               </>
             )}
@@ -846,34 +863,34 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {/* Step 12: Voice Selection */}
             {step === 12 && (
               <>
-                <div className="text-center ios-section mb-6">
-                  <h3 className="ios-title-2" style={{color: 'var(--ios-label)'}}>
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-white mb-4">
                     Choose Your Guide
                   </h3>
-                  <p className="ios-subhead ios-spacing-t-sm" style={{color: 'var(--ios-label-secondary)'}}>
+                  <p className="text-gray-400 text-lg">
                     Select a voice for your personalized meditation.
                   </p>
                 </div>
 
-                <div className="ios-list mb-6">
+                <div className="space-y-4 mb-8">
                   {VOICES.map((voice) => (
                     <button
                       key={voice.id}
                       onClick={() => setSelectedVoice(voice.id)}
-                      className={`ios-list-item no-select transition-all border-2 ${
+                      className={`w-full p-4 rounded-2xl border transition-all duration-300 ease-out ${
                         selectedVoice === voice.id
-                          ? 'border-blue-400 bg-blue-500/10'
-                          : 'border-transparent hover:border-blue-400'
-                      }`}
+                          ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
+                          : 'border-gray-300 bg-white/5 hover:border-blue-400 hover:bg-blue-500/5'
+                      } active:scale-98 transform`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center space-x-4">
                           <span className="text-2xl">{voice.icon}</span>
                           <div className="text-left">
-                            <div className="ios-body font-medium" style={{color: 'var(--ios-label)'}}>
+                            <div className={`font-semibold text-lg ${selectedVoice === voice.id ? 'text-blue-600' : 'text-white'}`}>
                               {voice.name}
                             </div>
-                            <div className="ios-caption" style={{color: 'var(--ios-label-secondary)'}}>
+                            <div className="text-sm text-gray-400 mt-1">
                               {voice.description}
                             </div>
                           </div>
@@ -895,11 +912,11 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
 
                 <button
                   onClick={handleCreateSession}
-                  className="w-full ios-button-prominent ios-padding-lg rounded-2xl text-center no-select active:scale-[0.98] transition-transform"
+                  className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
                 >
                   <div className="flex items-center justify-center space-x-2">
                     <span className="text-xl">✨</span>
-                    <span className="ios-title-3 text-white">Create Session</span>
+                    Create Session
                   </div>
                 </button>
               </>
