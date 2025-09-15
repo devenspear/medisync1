@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { NextRequest, NextResponse } from 'next/server';
 import { Database, type User } from './database';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
@@ -156,29 +157,29 @@ export class Auth {
   }
 }
 
-// Middleware for API routes
-export function withAuth(handler: Function) {
-  return async (req: any, res: any) => {
+// Simple middleware for App Router API routes
+export function withAuth(handler: any) {
+  return async (request: NextRequest, ...args: any[]) => {
     try {
-      const authHeader = req.headers.authorization;
+      const authHeader = request.headers.get('authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'No token provided' });
+        return NextResponse.json({ error: 'No token provided' }, { status: 401 });
       }
 
       const token = authHeader.substring(7);
       const user = await Auth.getUserFromToken(token);
 
       if (!user) {
-        return res.status(401).json({ error: 'Invalid token' });
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
       }
 
       // Add user to request
-      req.user = user;
+      (request as NextRequest & { user: AuthUser }).user = user;
 
-      return handler(req, res);
+      return handler(request as NextRequest & { user: AuthUser }, ...args);
     } catch (error) {
       console.error('Auth middleware error:', error);
-      return res.status(500).json({ error: 'Authentication failed' });
+      return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
     }
   };
 }

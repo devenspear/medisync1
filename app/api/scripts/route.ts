@@ -2,12 +2,63 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/auth';
 import { Database, sql } from '@/lib/database';
 import { createScriptGenerator } from '@/lib/scriptGenerator';
+import { checkRateLimit, getRateLimitKey, getRateLimitConfig } from '@/lib/rateLimiter';
 import crypto from 'crypto';
 
 // POST /api/scripts - Generate or retrieve cached script
 async function POST(request: NextRequest & { user: any }) {
   try {
+    // Enterprise Security: Rate limiting
+    const rateLimitConfig = getRateLimitConfig(request.nextUrl.pathname);
+    const rateLimitKey = getRateLimitKey(request, request.user.id);
+    const rateLimit = checkRateLimit(rateLimitKey, rateLimitConfig);
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded. Too many script generation requests.',
+          resetTime: rateLimit.resetTime
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitConfig.maxRequests.toString(),
+            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+            'X-RateLimit-Reset': Math.ceil(rateLimit.resetTime / 1000).toString(),
+            'Retry-After': Math.ceil((rateLimit.resetTime - Date.now()) / 1000).toString()
+          }
+        }
+      );
+    }
+
     const { assessment, promptPrimer } = await request.json();
+
+    // Enterprise Security: Input validation
+    if (!assessment || typeof assessment !== 'object') {
+      return NextResponse.json(
+        { error: 'Invalid assessment data provided' },
+        { status: 400 }
+      );
+    }
+
+    // Validate required assessment fields
+    const requiredFields = ['goal', 'currentState', 'duration', 'experience'];
+    for (const field of requiredFields) {
+      if (!assessment[field]) {
+        return NextResponse.json(
+          { error: `Missing required field: ${field}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Enterprise Security: Sanitize user inputs
+    if (promptPrimer && typeof promptPrimer === 'string' && promptPrimer.length > 1000) {
+      return NextResponse.json(
+        { error: 'Custom instructions too long (max 1000 characters)' },
+        { status: 400 }
+      );
+    }
 
     // Create a hash of the assessment data to use as cache key
     const cacheKey = crypto
@@ -43,7 +94,7 @@ async function POST(request: NextRequest & { user: any }) {
         WHERE id = ${script.id}
       `;
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         script: {
           intro_text: script.intro_text,
           main_content: script.main_content,
@@ -54,6 +105,15 @@ async function POST(request: NextRequest & { user: any }) {
         cached: true,
         cache_key: cacheKey
       });
+
+      // Enterprise Security: Add security headers
+      response.headers.set('X-Content-Type-Options', 'nosniff');
+      response.headers.set('X-Frame-Options', 'DENY');
+      response.headers.set('X-XSS-Protection', '1; mode=block');
+      response.headers.set('X-RateLimit-Limit', rateLimitConfig.maxRequests.toString());
+      response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
+
+      return response;
     }
 
     // Generate new script
@@ -101,11 +161,20 @@ async function POST(request: NextRequest & { user: any }) {
       console.warn('⚠️  Failed to cache script:', cacheError);
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       script,
       cached: false,
       cache_key: cacheKey
     });
+
+    // Enterprise Security: Add security headers
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-XSS-Protection', '1; mode=block');
+    response.headers.set('X-RateLimit-Limit', rateLimitConfig.maxRequests.toString());
+    response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString());
+
+    return response;
   } catch (error) {
     console.error('Script generation error:', error);
     return NextResponse.json(

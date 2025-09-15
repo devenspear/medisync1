@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/auth';
+import { withAuth, type AuthUser } from '@/lib/auth';
 import { Database } from '@/lib/database';
 
 // DELETE /api/sessions/[id] - Delete session
 async function DELETE(
-  request: NextRequest & { user: any },
-  { params }: { params: { id: string } }
+  request: NextRequest & { user: AuthUser },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await Database.deleteSessionConfig(params.id, request.user.id);
+    const { id } = await params;
+    await Database.deleteSessionConfig(id, request.user.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Delete session error:', error);

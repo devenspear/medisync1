@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAppStore, type SessionConfig, type AssessmentData } from '@/lib/store'
 import { getAudioEngine } from '@/lib/audioEngine'
-import { createScriptGenerator } from '@/lib/scriptGenerator'
+import { type MeditationScript } from '@/lib/scriptGenerator'
 import { createVoiceSynthesis, FallbackVoiceSynthesis } from '@/lib/voiceSynthesis'
+import { isDemoMode } from '@/lib/demoMode'
 
 interface SessionPlayerProps {
   session: SessionConfig
@@ -22,7 +23,53 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
   const [volumes, setVolumes] = useState(session.layers)
 
   const audioEngine = useRef(getAudioEngine())
-  const scriptGenerator = useRef(createScriptGenerator())
+  // Helper function to generate scripts with proper authentication
+  const generateScript = async (assessmentData: AssessmentData, promptPrimer?: string): Promise<MeditationScript> => {
+    const isDemo = isDemoMode()
+    console.log('Script generation mode:', isDemo ? 'Demo (test endpoint)' : 'Production (authenticated)')
+
+    // For development/testing, use test endpoint without auth
+    // For production, always require authentication
+    const endpoint = isDemo ? '/api/test-scripts' : '/api/scripts'
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    }
+
+    // Add authentication header for production
+    if (!isDemo) {
+      // Use proper auth token from authClient
+      const { authClient } = await import('@/lib/authClient')
+      const authToken = authClient.getToken()
+
+      if (!authToken) {
+        throw new Error('Authentication required. Please log in.')
+      }
+
+      headers['Authorization'] = `Bearer ${authToken}`
+    }
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        assessment: assessmentData,
+        promptPrimer: promptPrimer || assessmentData.userPrimer
+      })
+    })
+
+    if (!response.ok) {
+      const data = await response.json()
+
+      if (response.status === 401) {
+        throw new Error('Authentication failed. Please log in again.')
+      }
+
+      throw new Error(`HTTP ${response.status}: ${data.error || 'Script generation failed'}`)
+    }
+
+    const { script } = await response.json()
+    return script
+  }
   const voiceSynthesis = useRef(createVoiceSynthesis())
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const audioElementsRef = useRef<{
@@ -45,8 +92,8 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       setLoadingMessage('🤖 Generating personalized script with AI...')
       setLoadingProgress(0.1)
 
-      // Generate the meditation script
-      const script = await scriptGenerator.current.generateScript(session.assessment_data)
+      // Generate the meditation script via API
+      const script = await generateScript(session.assessment_data)
 
       setLoadingMessage('🎙️ Creating voice audio with ElevenLabs...')
       setLoadingProgress(0.3)
@@ -118,11 +165,15 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
         audioElementsRef.current.intro.volume = volumes.voice_volume
         audioElementsRef.current.intro.play()
       } else if (voiceSynthesis.current instanceof FallbackVoiceSynthesis) {
-        // Use browser TTS for fallback
-        const script = await scriptGenerator.current.generateScript(session.assessment_data)
-        setTimeout(() => {
-          voiceSynthesis.current.synthesizeText(script.intro_text, session.voice_id)
-        }, 1000)
+        // Use browser TTS for fallback - generate script via API
+        try {
+          const script = await generateScript(session.assessment_data)
+          setTimeout(() => {
+            voiceSynthesis.current.synthesizeText(script.intro_text, session.voice_id)
+          }, 1000)
+        } catch (error) {
+          console.error('Failed to generate script for fallback TTS:', error)
+        }
       }
 
       // Start timer

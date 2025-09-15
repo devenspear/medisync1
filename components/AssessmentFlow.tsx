@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { type SessionConfig, type AssessmentData } from '@/lib/store'
 import { createVoiceSynthesis } from '@/lib/voiceSynthesis'
 // Import only the data structures, not the template manager
-import { WISDOM_SOURCES, FEELING_OPTIONS, GOAL_OPTIONS } from '@/lib/promptTemplate'
+import { WISDOM_SOURCES, FEELING_OPTIONS, GOAL_OPTIONS } from '@/lib/promptConstants'
 
 const VOICES = [
   { id: 'female-1', name: 'Kelli', description: 'Warm & comforting meditation voice', icon: '🎙️' },

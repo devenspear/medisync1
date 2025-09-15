@@ -1,14 +1,30 @@
 import { type SessionConfig } from './store'
 
-// Demo mode for when API keys are not available
+// Demo mode for development/testing only
 export const isDemoMode = () => {
-  const hasElevenLabsKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY
-  const hasOpenAIKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY
+  // Enterprise Security: Never enable demo mode in production
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+    return false;
+  }
 
-  // App requires AI features to be fully functional
-  console.log('Demo mode check:', { hasElevenLabsKey: !!hasElevenLabsKey, hasOpenAIKey: !!hasOpenAIKey })
+  // Explicitly enable demo mode with environment variable for development
+  const forceDemoMode = process.env.FORCE_DEMO_MODE === 'true';
+  const hasElevenLabsKey = process.env.ELEVENLABS_API_KEY || process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
+  const hasOpenAIKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 
-  return !hasElevenLabsKey || !hasOpenAIKey
+  // Only enable demo mode if explicitly requested AND API keys are available (for testing)
+  const demoEnabled = forceDemoMode && hasElevenLabsKey && hasOpenAIKey;
+
+  console.log('Demo mode check:', {
+    nodeEnv: process.env.NODE_ENV,
+    vercelEnv: process.env.VERCEL_ENV,
+    forceDemoMode,
+    hasElevenLabsKey: !!hasElevenLabsKey,
+    hasOpenAIKey: !!hasOpenAIKey,
+    demoEnabled
+  });
+
+  return demoEnabled;
 }
 
 // Demo user for offline mode
