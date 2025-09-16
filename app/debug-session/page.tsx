@@ -91,7 +91,7 @@ export default function SessionDebugPage() {
               'female-1'
             )
 
-            addLog(`✅ Voice synthesis successful! Audio buffer size: ${audioBuffer.byteLength} bytes`)
+            addLog(`✅ Voice synthesis successful! Audio buffer size: ${audioBuffer ? audioBuffer.byteLength : 0} bytes`)
 
             // Test audio playback
             addLog('🔊 Testing audio playback...')

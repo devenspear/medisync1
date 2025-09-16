@@ -146,9 +146,9 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
           // Generate each section via API
           const [introResponse, mainResponse, closingResponse] = await Promise.all([
-            this.synthesizeViaAPI(script.intro_text, session.voice_id),
-            this.synthesizeViaAPI(script.main_content, session.voice_id),
-            this.synthesizeViaAPI(script.closing_text, session.voice_id)
+            synthesizeViaAPI(script.intro_text, session.voice_id),
+            synthesizeViaAPI(script.main_content, session.voice_id),
+            synthesizeViaAPI(script.closing_text, session.voice_id)
           ])
 
           setLoadingMessage('🎙️ Creating audio elements...')
