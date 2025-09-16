@@ -95,19 +95,23 @@ export default function SessionDebugPage() {
 
             // Test audio playback
             addLog('🔊 Testing audio playback...')
-            const audioUrl = voiceSynthesis.createAudioUrl(audioBuffer)
-            const audio = new Audio(audioUrl)
+            if (audioBuffer) {
+              const audioUrl = voiceSynthesis.createAudioUrl(audioBuffer)
+              const audio = new Audio(audioUrl)
 
-            audio.onloadeddata = () => addLog('✅ Audio loaded successfully')
-            audio.oncanplay = () => addLog('✅ Audio can play')
-            audio.onplay = () => addLog('▶️ Audio started playing')
-            audio.onended = () => {
-              addLog('⏹️ Audio playback completed')
-              voiceSynthesis.revokeAudioUrl(audioUrl)
+              audio.onloadeddata = () => addLog('✅ Audio loaded successfully')
+              audio.oncanplay = () => addLog('✅ Audio can play')
+              audio.onplay = () => addLog('▶️ Audio started playing')
+              audio.onended = () => {
+                addLog('⏹️ Audio playback completed')
+                voiceSynthesis.revokeAudioUrl(audioUrl)
+              }
+              audio.onerror = (e) => addLog(`❌ Audio playback error: ${e}`)
+
+              await audio.play()
+            } else {
+              addLog('❌ No audio buffer to play')
             }
-            audio.onerror = (e) => addLog(`❌ Audio playback error: ${e}`)
-
-            await audio.play()
 
           } catch (voiceError) {
             addLog(`❌ Voice synthesis failed: ${voiceError.message}`)
