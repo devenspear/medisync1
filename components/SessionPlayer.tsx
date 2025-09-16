@@ -72,21 +72,6 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
   const { saveSession, updateUserStats } = useAppStore()
 
-  // Helper method to synthesize text via API
-  const synthesizeViaAPI = async (text: string, voiceId: string): Promise<Response> => {
-    const response = await fetch('/api/voice/synthesize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, voiceId })
-    })
-
-    if (!response.ok) {
-      throw new Error(`Voice synthesis failed: ${response.status}`)
-    }
-
-    return response
-  }
-
   useEffect(() => {
     initializeSession()
     return () => {
@@ -146,10 +131,27 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
           // Generate each section via API
           const [introResponse, mainResponse, closingResponse] = await Promise.all([
-            synthesizeViaAPI(script.intro_text, session.voice_id),
-            synthesizeViaAPI(script.main_content, session.voice_id),
-            synthesizeViaAPI(script.closing_text, session.voice_id)
+            fetch('/api/voice/synthesize', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: script.intro_text, voiceId: session.voice_id })
+            }),
+            fetch('/api/voice/synthesize', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: script.main_content, voiceId: session.voice_id })
+            }),
+            fetch('/api/voice/synthesize', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: script.closing_text, voiceId: session.voice_id })
+            })
           ])
+
+          // Check if all requests succeeded
+          if (!introResponse.ok || !mainResponse.ok || !closingResponse.ok) {
+            throw new Error('Voice synthesis failed')
+          }
 
           setLoadingMessage('🎙️ Creating audio elements...')
           setLoadingProgress(0.8)
