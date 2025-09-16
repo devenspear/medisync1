@@ -168,7 +168,7 @@ CLOSING:
     const contentLines = lines.slice(contentStartIndex)
     const contentText = contentLines.join('\n')
 
-    // Try to parse structured sections first
+    // Try to parse structured sections first - remove all organizational labels
     const sections = contentText.split(/(?:INTRO:|MAIN:|CLOSING:)/).map(s => s.trim()).filter(Boolean)
 
     let intro = ''
@@ -176,9 +176,10 @@ CLOSING:
     let closing = ''
 
     if (sections.length >= 3) {
-      intro = sections[0]
-      main = sections[1]
-      closing = sections[2]
+      // Clean sections of any remaining organizational text
+      intro = this.cleanOrganizationalText(sections[0])
+      main = this.cleanOrganizationalText(sections[1])
+      closing = this.cleanOrganizationalText(sections[2])
     } else {
       // Fallback parsing - split content into three parts
       const paragraphs = contentText.split('\n\n').filter(p => p.trim())
@@ -187,14 +188,14 @@ CLOSING:
         const introCount = Math.max(1, Math.floor(paragraphs.length * 0.15))
         const closingCount = Math.max(1, Math.floor(paragraphs.length * 0.25))
 
-        intro = paragraphs.slice(0, introCount).join('\n\n')
-        main = paragraphs.slice(introCount, -closingCount).join('\n\n')
-        closing = paragraphs.slice(-closingCount).join('\n\n')
+        intro = this.cleanOrganizationalText(paragraphs.slice(0, introCount).join('\n\n'))
+        main = this.cleanOrganizationalText(paragraphs.slice(introCount, -closingCount).join('\n\n'))
+        closing = this.cleanOrganizationalText(paragraphs.slice(-closingCount).join('\n\n'))
       } else {
         // Very short content, distribute as best as possible
-        intro = paragraphs[0] || ''
-        main = paragraphs.slice(1, -1).join('\n\n') || paragraphs[1] || ''
-        closing = paragraphs[paragraphs.length - 1] || ''
+        intro = this.cleanOrganizationalText(paragraphs[0] || '')
+        main = this.cleanOrganizationalText(paragraphs.slice(1, -1).join('\n\n') || paragraphs[1] || '')
+        closing = this.cleanOrganizationalText(paragraphs[paragraphs.length - 1] || '')
       }
     }
 
@@ -213,6 +214,35 @@ CLOSING:
   private parseScript(text: string, duration: number): MeditationScript {
     // Legacy method for backward compatibility
     return this.parseScriptWithTitle(text, duration)
+  }
+
+  private cleanOrganizationalText(text: string): string {
+    // Remove all organizational labels and formatting that shouldn't be read aloud
+    let cleaned = text
+
+    // Remove section headers
+    cleaned = cleaned.replace(/^(INTRO|MAIN|CLOSING):\s*/gmi, '')
+
+    // Remove markdown formatting
+    cleaned = cleaned.replace(/^#+\s*/gm, '') // Remove headers
+    cleaned = cleaned.replace(/^\*\s*/gm, '') // Remove bullet points
+    cleaned = cleaned.replace(/^-\s*/gm, '') // Remove dashes
+    cleaned = cleaned.replace(/^\d+\.\s*/gm, '') // Remove numbered lists
+
+    // Remove organizational phrases
+    cleaned = cleaned.replace(/\[(.*?)\]/g, '') // Remove [brackets] content
+    cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '$1') // Remove **bold** formatting
+    cleaned = cleaned.replace(/__(.*?)__/g, '$1') // Remove __bold__ formatting
+    cleaned = cleaned.replace(/\*(.*?)\*/g, '$1') // Remove *italic* formatting
+
+    // Remove common organizational words at the start of paragraphs
+    cleaned = cleaned.replace(/^(Step \d+:|Phase \d+:|Part \d+:|Section \d+:)\s*/gmi, '')
+
+    // Clean up extra whitespace
+    cleaned = cleaned.replace(/\n\s*\n/g, '\n\n') // Normalize paragraph breaks
+    cleaned = cleaned.trim()
+
+    return cleaned
   }
 
   private countWords(text: string): number {

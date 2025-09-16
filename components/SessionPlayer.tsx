@@ -72,6 +72,21 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
   const { saveSession, updateUserStats } = useAppStore()
 
+  // Helper method to synthesize text via API
+  const synthesizeViaAPI = async (text: string, voiceId: string): Promise<Response> => {
+    const response = await fetch('/api/voice/synthesize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voiceId })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Voice synthesis failed: ${response.status}`)
+    }
+
+    return response
+  }
+
   useEffect(() => {
     initializeSession()
     return () => {
@@ -87,125 +102,106 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       // Generate the meditation script via API
       const script = await generateScript(session.assessment_data)
 
-      setLoadingMessage('🎵 Generating background music...')
+      setLoadingMessage('🎵 Loading background music...')
       setLoadingProgress(0.2)
 
-      // Generate background music if assessment data is available
-      if (session.assessment_data.selectedPrimaryTheme) {
+      // Load simple MP3 background music
+      if (session.layers.music_type === 'mp3' && session.layers.music_file) {
         try {
-          console.log('🎵 Starting music generation with options:', {
-            duration: session.duration,
-            primaryTheme: session.assessment_data.selectedPrimaryTheme?.displayName,
-            atmosphericElements: session.assessment_data.selectedAtmosphericElements?.length || 0,
-            soundscapeJourney: session.assessment_data.selectedSoundscapeJourney?.displayName
-          })
+          console.log('🎵 Loading MP3 background music:', session.layers.music_file)
 
-          const musicOptions = {
-            duration: session.duration,
-            primaryTheme: session.assessment_data.selectedPrimaryTheme,
-            atmosphericElements: session.assessment_data.selectedAtmosphericElements || [],
-            soundscapeJourney: session.assessment_data.selectedSoundscapeJourney || {
-              displayName: 'Gentle Emergence',
-              structure: 'Starting with soft, ambient tones that gradually build in complexity'
-            }
-          }
-
-          const musicResult = await musicSynthesis.current.generateMusicWithFallback(musicOptions)
-          console.log('🎵 Music generation result:', musicResult ? 'Success' : 'Failed/Fallback')
-
-          if (musicResult?.audioUrl) {
-            console.log('🎵 Loading music audio into engine...')
-            const musicAudio = await audioEngine.current.playMusic(musicResult.audioUrl, session.layers.music_volume)
-            musicAudio.pause() // Don't start playing yet
-            console.log('🎵 Music audio loaded and paused, ready to play')
-          } else {
-            console.log('🎵 No music audio URL generated - continuing without background music')
-          }
+          const musicAudio = await audioEngine.current.playMusic(session.layers.music_file, session.layers.music_volume)
+          musicAudio.pause() // Don't start playing yet
+          musicAudio.loop = true // Loop the background music
+          console.log('🎵 MP3 background music loaded and ready to play')
         } catch (musicError) {
-          console.error('🎵 Music generation failed:', musicError)
-          setLoadingMessage('⚠️ Music generation failed, continuing with voice only...')
+          console.error('🎵 MP3 music loading failed:', musicError)
+          setLoadingMessage('⚠️ Background music failed to load, continuing with voice only...')
         }
       } else {
-        console.log('🎵 No primary theme selected, skipping music generation')
+        console.log('🎵 No MP3 music file specified, continuing without background music')
       }
 
       setLoadingMessage('🎙️ Creating voice audio with ElevenLabs...')
       setLoadingProgress(0.4)
 
-      // Generate voice audio (if using ElevenLabs)
-      if (!(voiceSynthesis.current instanceof FallbackVoiceSynthesis)) {
-        setLoadingMessage('🎙️ Synthesizing intro narration...')
+      // Generate voice audio using server-side ElevenLabs API
+      setLoadingMessage('🎙️ Generating voice narration with ElevenLabs...')
+      setLoadingProgress(0.4)
 
-        const audioBuffers = await voiceSynthesis.current.synthesizeScript(
-          script.intro_text,
-          script.main_content,
-          script.closing_text,
-          session.voice_id,
-          (progress) => {
-            const overallProgress = 0.4 + progress * 0.4
-            setLoadingProgress(overallProgress)
+      try {
+        console.log('🎙️ Testing ElevenLabs availability via API...')
 
-            if (progress < 0.4) {
-              setLoadingMessage('🎙️ Synthesizing intro narration...')
-            } else if (progress < 0.8) {
-              setLoadingMessage('🎙️ Synthesizing main meditation...')
-            } else {
-              setLoadingMessage('🎙️ Synthesizing closing guidance...')
-            }
-          }
-        )
+        // Test if ElevenLabs is available via server API
+        const testResponse = await fetch('/api/voice/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ voiceId: session.voice_id })
+        })
 
-        // Create audio elements
-        const introUrl = voiceSynthesis.current.createAudioUrl(audioBuffers.intro)
-        const mainUrl = voiceSynthesis.current.createAudioUrl(audioBuffers.main)
-        const closingUrl = voiceSynthesis.current.createAudioUrl(audioBuffers.closing)
+        if (testResponse.ok) {
+          console.log('✅ ElevenLabs API available, generating voice narration...')
+          setLoadingMessage('🎙️ Synthesizing intro narration...')
+          setLoadingProgress(0.5)
 
-        const introAudio = new Audio(introUrl)
-        const mainAudio = new Audio(mainUrl)
-        const closingAudio = new Audio(closingUrl)
+          // Generate each section via API
+          const [introResponse, mainResponse, closingResponse] = await Promise.all([
+            this.synthesizeViaAPI(script.intro_text, session.voice_id),
+            this.synthesizeViaAPI(script.main_content, session.voice_id),
+            this.synthesizeViaAPI(script.closing_text, session.voice_id)
+          ])
 
-        audioElementsRef.current.intro = introAudio
-        audioElementsRef.current.main = mainAudio
-        audioElementsRef.current.closing = closingAudio
+          setLoadingMessage('🎙️ Creating audio elements...')
+          setLoadingProgress(0.8)
 
-        // Calculate total voice duration once audio is loaded
-        setLoadingMessage('🔍 Calculating voice duration...')
-        await Promise.all([
-          new Promise(resolve => {
-            introAudio.onloadedmetadata = resolve
-            introAudio.load()
-          }),
-          new Promise(resolve => {
-            mainAudio.onloadedmetadata = resolve
-            mainAudio.load()
-          }),
-          new Promise(resolve => {
-            closingAudio.onloadedmetadata = resolve
-            closingAudio.load()
+          // Create audio elements from API responses
+          const introAudio = new Audio(URL.createObjectURL(await introResponse.blob()))
+          const mainAudio = new Audio(URL.createObjectURL(await mainResponse.blob()))
+          const closingAudio = new Audio(URL.createObjectURL(await closingResponse.blob()))
+
+          audioElementsRef.current.intro = introAudio
+          audioElementsRef.current.main = mainAudio
+          audioElementsRef.current.closing = closingAudio
+
+          // Calculate total voice duration
+          setLoadingMessage('🔍 Calculating voice duration...')
+          await Promise.all([
+            new Promise(resolve => {
+              introAudio.onloadedmetadata = resolve
+              introAudio.load()
+            }),
+            new Promise(resolve => {
+              mainAudio.onloadedmetadata = resolve
+              mainAudio.load()
+            }),
+            new Promise(resolve => {
+              closingAudio.onloadedmetadata = resolve
+              closingAudio.load()
+            })
+          ])
+
+          const totalVoiceDuration = introAudio.duration + mainAudio.duration + closingAudio.duration
+          console.log('🎙️ ElevenLabs voice durations:', {
+            intro: introAudio.duration,
+            main: mainAudio.duration,
+            closing: closingAudio.duration,
+            total: totalVoiceDuration
           })
-        ])
 
-        const totalVoiceDuration = introAudio.duration + mainAudio.duration + closingAudio.duration
-        console.log('🎙️ Voice durations:', {
-          intro: introAudio.duration,
-          main: mainAudio.duration,
-          closing: closingAudio.duration,
-          total: totalVoiceDuration
-        })
+          setActualVoiceDuration(totalVoiceDuration)
+          const extendedDuration = Math.max(totalTime, totalVoiceDuration + 5)
+          setTotalTime(extendedDuration)
+          setLoadingMessage('✅ ElevenLabs voice ready!')
 
-        // Extend session time to voice duration + 5 seconds buffer
-        const extendedDuration = Math.max(totalTime, totalVoiceDuration + 5)
-        console.log('⏰ Session timing:', {
-          originalDuration: totalTime,
-          voiceDuration: totalVoiceDuration,
-          extendedDuration: extendedDuration
-        })
+        } else {
+          const errorData = await testResponse.json()
+          console.log('❌ ElevenLabs API not available:', errorData)
+          setLoadingMessage('🔊 ElevenLabs unavailable, using browser speech...')
+        }
 
-        setActualVoiceDuration(totalVoiceDuration)
-        setTotalTime(extendedDuration)
-        setLoadingMessage('✅ Voice duration calculated and session extended')
-      } else {
-        setLoadingMessage('🔊 Using browser speech synthesis...')
+      } catch (voiceError) {
+        console.error('🎙️ Voice generation failed:', voiceError)
+        setLoadingMessage('🔊 Voice generation failed, using browser speech...')
       }
 
       setLoadingMessage('🔊 Setting up audio playback...')
@@ -253,11 +249,12 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
       // Start voice guidance (either ElevenLabs audio or fallback TTS)
       if (audioElementsRef.current.intro) {
-        console.log('🎙️ Starting voice narration...')
+        console.log('🎙️ Starting ElevenLabs voice narration...')
         audioElementsRef.current.intro.volume = volumes.voice_volume
         audioElementsRef.current.intro.play()
-      } else if (voiceSynthesis.current instanceof FallbackVoiceSynthesis) {
+      } else {
         // Use browser TTS for fallback - generate script via API
+        console.log('🎙️ Using browser speech synthesis fallback')
         try {
           const script = await generateScript(session.assessment_data)
           setTimeout(() => {
@@ -490,7 +487,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
           </div>
           <p className="text-sm text-gray-400 mt-2">{formatTime(totalTime)} total</p>
 
-          {phase === 'ready' && !(voiceSynthesis.current instanceof FallbackVoiceSynthesis) && (
+          {phase === 'ready' && voiceSynthesis.current.constructor.name === 'VoiceSynthesis' && (
             <div className="mt-4 flex items-center justify-center space-x-2">
               <span className="text-xs text-gray-500">Powered by</span>
               <span className="text-xs text-blue-400 font-semibold">ElevenLabs AI</span>
