@@ -114,7 +114,7 @@ export default function SessionDebugPage() {
             }
 
           } catch (voiceError) {
-            addLog(`❌ Voice synthesis failed: ${voiceError.message}`)
+            addLog(`❌ Voice synthesis failed: ${voiceError instanceof Error ? voiceError.message : 'Unknown error'}`)
 
             // Test the preview API endpoint as backup
             addLog('🔄 Testing voice preview API endpoint...')
@@ -137,7 +137,7 @@ export default function SessionDebugPage() {
                 addLog(`❌ Voice preview API failed: ${previewResponse.status} - ${errorData.error}`)
               }
             } catch (previewError) {
-              addLog(`❌ Voice preview API error: ${previewError.message}`)
+              addLog(`❌ Voice preview API error: ${previewError instanceof Error ? previewError.message : 'Unknown error'}`)
             }
           }
 
@@ -168,11 +168,11 @@ export default function SessionDebugPage() {
         addLog('🎯 Debug completed! Check logs above for the root cause.')
 
       } catch (scriptError) {
-        addLog(`❌ Script generation error: ${scriptError.message}`)
+        addLog(`❌ Script generation error: ${scriptError instanceof Error ? scriptError.message : 'Unknown error'}`)
       }
 
     } catch (error) {
-      addLog(`❌ Debug error: ${error.message}`)
+      addLog(`❌ Debug error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsProcessing(false)
     }
@@ -208,7 +208,7 @@ export default function SessionDebugPage() {
         addLog(`Error details: ${JSON.stringify(errorData, null, 2)}`)
       }
     } catch (error) {
-      addLog(`❌ Direct API test failed: ${error.message}`)
+      addLog(`❌ Direct API test failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

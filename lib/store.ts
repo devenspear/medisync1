@@ -16,6 +16,7 @@ export interface AssessmentData {
   wisdomSource: string
   selectedFeelings: string[]
   userPrimer: string
+  selectedMusic?: string // Simple music selection
   // Music generation selections
   selectedPrimaryTheme?: {
     displayName: string
@@ -35,6 +36,7 @@ export interface AudioLayers {
   music_volume: number
   voice_volume: number
   music_type: string
+  music_file?: string // Optional MP3 file path for simple music playback
 }
 
 export interface SessionConfig {
