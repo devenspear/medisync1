@@ -16,6 +16,11 @@ type SessionPhase = 'loading' | 'ready' | 'playing' | 'paused' | 'completed'
 
 export default function SessionPlayer({ session, onClose }: SessionPlayerProps) {
   const [phase, setPhase] = useState<SessionPhase>('loading')
+
+  // Update phase ref whenever phase changes
+  useEffect(() => {
+    phaseRef.current = phase
+  }, [phase])
   const [currentTime, setCurrentTime] = useState(0)
   const [totalTime, setTotalTime] = useState(session.duration * 60) // Convert to seconds
   const [actualVoiceDuration, setActualVoiceDuration] = useState(0) // Track actual voice duration
@@ -64,6 +69,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
   }
   const voiceSynthesis = useRef(createVoiceSynthesis())
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const phaseRef = useRef<SessionPhase>('loading')
   const audioElementsRef = useRef<{
     intro?: HTMLAudioElement
     main?: HTMLAudioElement
@@ -160,6 +166,27 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
           const introAudio = new Audio(URL.createObjectURL(await introResponse.blob()))
           const mainAudio = new Audio(URL.createObjectURL(await mainResponse.blob()))
           const closingAudio = new Audio(URL.createObjectURL(await closingResponse.blob()))
+
+          // Set up sequential playback - intro -> main -> closing
+          introAudio.onended = () => {
+            console.log('🎙️ Intro audio finished, starting main content...')
+            if (audioElementsRef.current.main && phaseRef.current === 'playing') {
+              audioElementsRef.current.main.volume = volumes.voice_volume
+              audioElementsRef.current.main.play()
+            }
+          }
+
+          mainAudio.onended = () => {
+            console.log('🎙️ Main audio finished, starting closing...')
+            if (audioElementsRef.current.closing && phaseRef.current === 'playing') {
+              audioElementsRef.current.closing.volume = volumes.voice_volume
+              audioElementsRef.current.closing.play()
+            }
+          }
+
+          closingAudio.onended = () => {
+            console.log('🎙️ All voice segments completed')
+          }
 
           audioElementsRef.current.intro = introAudio
           audioElementsRef.current.main = mainAudio
@@ -279,8 +306,12 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
     setPhase('paused')
     audioEngine.current.pauseAll()
 
+    // Pause all voice audio elements
     Object.values(audioElementsRef.current).forEach(audio => {
-      if (audio) audio.pause()
+      if (audio && !audio.paused) {
+        audio.pause()
+        console.log('🎙️ Paused voice audio')
+      }
     })
 
     if (timerRef.current) {
@@ -288,9 +319,44 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
     }
   }
 
-  const resumeSession = () => {
+  const resumeSession = async () => {
     setPhase('playing')
-    startSession()
+
+    // Resume music if it exists
+    const musicAudio = audioEngine.current.getMusicAudio()
+    if (musicAudio) {
+      console.log('🎵 Resuming music playback...')
+      musicAudio.volume = volumes.music_volume
+      try {
+        await musicAudio.play()
+        console.log('🎵 Music resumed successfully')
+      } catch (musicError) {
+        console.error('🎵 Music resume failed:', musicError)
+      }
+    }
+
+    // Resume currently paused voice audio (if any)
+    const pausedAudio = Object.values(audioElementsRef.current).find(audio =>
+      audio && audio.paused && audio.currentTime > 0 && audio.currentTime < audio.duration
+    )
+
+    if (pausedAudio) {
+      console.log('🎙️ Resuming voice audio from where it was paused...')
+      pausedAudio.volume = volumes.voice_volume
+      try {
+        await pausedAudio.play()
+      } catch (error) {
+        console.error('🎙️ Voice resume failed:', error)
+      }
+    } else if (audioElementsRef.current.intro && audioElementsRef.current.intro.currentTime === 0) {
+      // If no audio has started yet, start from the beginning
+      console.log('🎙️ Starting voice narration from the beginning...')
+      audioElementsRef.current.intro.volume = volumes.voice_volume
+      audioElementsRef.current.intro.play()
+    }
+
+    // Resume timer
+    startTimer()
   }
 
   const stopSession = () => {
