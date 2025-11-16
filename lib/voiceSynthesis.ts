@@ -49,6 +49,11 @@ export class VoiceSynthesis {
     processedText = processedText.replace(/\[Closing\]/gi, '')
     processedText = processedText.replace(/\[Introduction\]/gi, '')
 
+    // SSML features temporarily disabled due to audio quality issues
+    // The SSML prosody speed control was causing compressed noise artifacts
+    // Speed should be controlled via ElevenLabs voice profile settings instead
+
+    /* DISABLED - causing audio artifacts
     // Add natural pauses at sentence endings
     processedText = processedText.replace(/\./g, '.<break time="1.5s"/>')
     processedText = processedText.replace(/,/g, ',<break time="0.8s"/>')
@@ -63,6 +68,7 @@ export class VoiceSynthesis {
 
     // Wrap in SSML with prosody for speed control
     processedText = `<speak><prosody rate="${ratePercent}%">${processedText}</prosody></speak>`
+    */
 
     return processedText
   }
@@ -73,7 +79,8 @@ export class VoiceSynthesis {
       throw new Error(`Voice ID ${voiceId} not found`)
     }
 
-    // Process the text to remove formatting tags, add natural pauses, and set speed
+    // Process the text to remove formatting tags
+    // NOTE: speed parameter currently ignored - control speed via ElevenLabs voice profile
     const processedText = this.processScriptText(text, speed)
 
     const options: VoiceOptions = {

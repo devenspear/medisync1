@@ -7,12 +7,14 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🎙️ [Voice Synthesis] Starting request...')
     const { text, voiceId, speed = 0.85 } = await request.json()
+    // NOTE: speed parameter currently ignored due to SSML causing audio artifacts
+    // Control speed via ElevenLabs voice profile settings instead
 
     console.log('🎙️ [Voice Synthesis] Request params:', {
       textLength: text?.length || 0,
       textPreview: text?.substring(0, 100) + '...',
       voiceId,
-      speed,
+      speed: 'IGNORED - using ElevenLabs profile default',
       hasElevenLabsKey: !!process.env.ELEVENLABS_API_KEY
     })
 
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🎙️ [Voice Synthesis] Calling ElevenLabs API with speed:', speed)
+    console.log('🎙️ [Voice Synthesis] Calling ElevenLabs API (using voice profile defaults)...')
 
     // Generate voice audio with configurable speed
     const audioBuffer = await voiceSynthesis.synthesizeText(text, voiceId, speed)

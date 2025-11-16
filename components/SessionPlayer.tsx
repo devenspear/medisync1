@@ -800,8 +800,8 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
             />
           </div>
 
-          {/* Voice Speed */}
-          <div>
+          {/* Voice Speed - TEMPORARILY DISABLED */}
+          <div className="opacity-50">
             <div className="flex justify-between items-center mb-3">
               <label className="text-white font-medium">⚡ Voice Speed</label>
               <span className="text-gray-400 text-sm">{Math.round(voiceSpeed * 100)}%</span>
@@ -814,11 +814,11 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
               value={voiceSpeed}
               onChange={(e) => setVoiceSpeed(parseFloat(e.target.value))}
               className="ios-slider"
-              disabled={phase !== 'ready'}
+              disabled={true}
             />
-            {phase !== 'ready' && (
-              <p className="text-xs text-gray-500 mt-2">Speed can only be adjusted before starting the session</p>
-            )}
+            <p className="text-xs text-gray-500 mt-2">
+              ⚠️ Temporarily disabled - Speed controlled via ElevenLabs voice profile
+            </p>
           </div>
 
           {/* Save Button */}
