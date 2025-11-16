@@ -70,13 +70,15 @@ export interface MeditationScript {
 export class Database {
   // User operations
   static async createUser(email: string, passwordHash: string): Promise<User> {
+    const defaultPreferences = {
+      default_duration: 10,
+      preferred_voice: 'female-1',
+      favorite_frequency: 'alpha'
+    };
+
     const result = await sql`
       INSERT INTO users (email, password_hash, total_minutes, current_streak, preferences)
-      VALUES (${email}, ${passwordHash}, 0, 0, ${JSON.stringify({
-        default_duration: 10,
-        preferred_voice: 'female-1',
-        favorite_frequency: 'alpha'
-      })})
+      VALUES (${email}, ${passwordHash}, 0, 0, ${sql.json(defaultPreferences)})
       RETURNING *
     `;
     return result.rows[0] as User;
@@ -121,8 +123,8 @@ export class Database {
         ${sessionConfig.duration},
         ${sessionConfig.frequency},
         ${sessionConfig.voice_id},
-        ${JSON.stringify(sessionConfig.layers)},
-        ${JSON.stringify(sessionConfig.assessment_data)}
+        ${sql.json(sessionConfig.layers)},
+        ${sql.json(sessionConfig.assessment_data)}
       )
       RETURNING *
     `;
