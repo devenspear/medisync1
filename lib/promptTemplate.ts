@@ -90,11 +90,15 @@ export class PromptTemplateManager {
   }
 
   /**
-   * Calculate word count based on duration (approximately 120-150 words per minute for meditation)
+   * Calculate word count based on duration accounting for SSML pauses
    */
   calculateMaxWordCount(durationMinutes: number): number {
-    // Use 130 words per minute as average for meditation scripts
-    return Math.floor(durationMinutes * 130);
+    // Use 80 words per minute to account for:
+    // - Slow meditation speaking pace
+    // - SSML pause tags (1.5s after periods, 0.8s after commas)
+    // - Natural breathing room
+    // This ensures the narration fits within the requested duration
+    return Math.floor(durationMinutes * 80);
   }
 
   /**

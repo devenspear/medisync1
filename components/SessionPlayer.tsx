@@ -271,37 +271,8 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
           closingAudio.onended = () => {
             console.log('🎙️ All voice segments completed')
-
-            // Start music fade-out after voice completes
-            const musicAudio = audioEngine.current.getMusicAudio()
-            if (musicAudio && phaseRef.current === 'playing') {
-              console.log(`🎵 Starting ${MUSIC_FADE_AFTER_VOICE}s music fade-out after voice completion...`)
-
-              const fadeSteps = 20 // Number of fade steps for smooth transition
-              const fadeInterval = (MUSIC_FADE_AFTER_VOICE * 1000) / fadeSteps
-              const initialVolume = musicAudio.volume
-              const volumeStep = initialVolume / fadeSteps
-              let currentStep = 0
-
-              const fadeTimer = setInterval(() => {
-                currentStep++
-                const newVolume = Math.max(0, initialVolume - (volumeStep * currentStep))
-
-                if (musicAudio && phaseRef.current === 'playing') {
-                  musicAudio.volume = newVolume
-                  audioEngine.current.setMusicVolume(newVolume)
-                  console.log(`🎵 Fade step ${currentStep}/${fadeSteps}: volume ${newVolume.toFixed(2)}`)
-                }
-
-                if (currentStep >= fadeSteps) {
-                  clearInterval(fadeTimer)
-                  console.log('🎵 Music fade complete, ending session')
-                  if (phaseRef.current === 'playing') {
-                    stopSession()
-                  }
-                }
-              }, fadeInterval)
-            }
+            // Music will continue and fade out based on the timer reaching totalTime
+            // The timer handles the final 5-second fade and session completion
           }
 
           audioElementsRef.current.intro = introAudio
@@ -335,17 +306,18 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
           setActualVoiceDuration(totalVoiceDuration)
 
-          // Calculate total session time based on voice duration + delays + fade
-          // Total = voice delay + voice duration + music fade after voice
-          const calculatedTotalTime = Math.ceil(VOICE_START_DELAY + totalVoiceDuration + MUSIC_FADE_AFTER_VOICE)
-          setTotalTime(calculatedTotalTime)
-          console.log(`⏱️ Session duration calculated:`, {
-            voiceStartDelay: VOICE_START_DELAY,
+          // Keep user's requested duration - voice script should fit within this time
+          console.log(`⏱️ Session duration:`, {
+            requestedDuration: totalTime,
             totalVoiceDuration,
-            musicFadeAfterVoice: MUSIC_FADE_AFTER_VOICE,
-            calculatedTotal: calculatedTotalTime,
-            originalConfigured: session.duration * 60
+            voiceStartDelay: VOICE_START_DELAY
           })
+
+          // Warning if voice is significantly longer than requested time
+          if (totalVoiceDuration > totalTime - VOICE_START_DELAY) {
+            console.warn(`⚠️ Voice duration (${totalVoiceDuration}s) exceeds requested time minus delay (${totalTime - VOICE_START_DELAY}s). Script may be too long.`)
+          }
+
           setLoadingMessage('✅ ElevenLabs voice ready!')
 
         } else {
@@ -530,12 +502,20 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       setCurrentTime(prev => {
         const newTime = prev + 1
 
-        // Timer just tracks elapsed time - session end is controlled by voice completion
-        // (closingAudio.onended handles music fade and session completion)
+        // Implement music fade-out during final 5 seconds
+        const remainingTime = totalTime - newTime
+        if (remainingTime <= 5 && remainingTime > 0) {
+          const musicAudio = audioEngine.current.getMusicAudio()
+          if (musicAudio) {
+            const fadeVolume = (remainingTime / 5) * volumes.music_volume
+            musicAudio.volume = fadeVolume
+            audioEngine.current.setMusicVolume(fadeVolume)
+          }
+        }
 
-        // Safety check: if timer exceeds total time significantly, something went wrong
-        if (newTime > totalTime + 30) {
-          console.warn('⚠️ Session timer exceeded expected duration by 30s - force stopping')
+        // End session when requested time is reached
+        if (newTime >= totalTime) {
+          console.log('⏰ Session time complete - stopping session')
           stopSession()
           return totalTime
         }
