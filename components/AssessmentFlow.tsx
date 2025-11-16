@@ -337,7 +337,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       return selectedGoal ? (
         <button
           onClick={handleContinueFromGoal}
-          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+          className="w-full py-3 rounded-xl font-semibold text-base bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
         >
           Continue
         </button>
@@ -348,7 +348,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       return (
         <button
           onClick={handleContinueFromWisdom}
-          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+          className="w-full py-3 rounded-xl font-semibold text-base bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
         >
           Continue
         </button>
@@ -359,7 +359,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       return (
         <button
           onClick={handleContinueFromFeelings}
-          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+          className="w-full py-3 rounded-xl font-semibold text-base bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
         >
           Continue
         </button>
@@ -374,9 +374,9 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         <button
           onClick={handleContinueFromSurvey}
           disabled={!hasAllAnswers}
-          className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all ${
+          className={`w-full py-3 rounded-xl font-semibold text-base transition-all ${
             hasAllAnswers
-              ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
+              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 active:scale-95'
               : 'bg-gray-700 text-gray-400 cursor-not-allowed'
           }`}
         >
@@ -395,7 +395,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       return (
         <button
           onClick={handleContinueFromMusic}
-          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+          className="w-full py-3 rounded-xl font-semibold text-base bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
         >
           Continue
         </button>
@@ -406,10 +406,10 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       return (
         <button
           onClick={handleContinueFromPrimer}
-          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+          className="w-full py-3 rounded-xl font-semibold text-base bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
         >
           <div className="flex items-center justify-center space-x-2">
-            <span className="text-xl">✨</span>
+            <span className="text-lg">✨</span>
             <span>Generate Script</span>
           </div>
         </button>
@@ -420,7 +420,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       return (
         <button
           onClick={handleContinueFromReview}
-          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+          className="w-full py-3 rounded-xl font-semibold text-base bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
         >
           Choose Voice
         </button>
@@ -431,7 +431,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       return (
         <button
           onClick={handleCreateSession}
-          className="w-full py-4 rounded-2xl font-semibold text-lg bg-blue-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+          className="w-full py-3 rounded-xl font-semibold text-base bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
         >
           Create Session
         </button>
@@ -442,17 +442,17 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex flex-col overflow-hidden">
-      {/* Fixed Header */}
+    <div className="h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-black text-white flex flex-col overflow-hidden">
+      {/* Fixed Header - Compact */}
       <div className="flex-shrink-0 bg-black/50 backdrop-blur-xl border-b border-gray-800/50">
-        <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={step === 1 ? onCancel : () => setStep(step - 1)}
-            className="w-10 h-10 rounded-full bg-gray-800/50 flex items-center justify-center text-blue-400 active:scale-95 transition-all"
+            className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-800/60 to-gray-900/60 flex items-center justify-center text-blue-400 active:scale-95 transition-all shadow-lg"
           >
             {step === 1 ? '✕' : '←'}
           </button>
-          <div className="text-lg font-semibold text-white">
+          <div className="text-base font-semibold text-white">
             {step === 1 && 'Choose Goal'}
             {step === 2 && 'Wisdom Source'}
             {step === 3 && 'Feelings'}
@@ -464,17 +464,17 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {step === 9 && 'Review Script'}
             {step === 10 && 'Choose Voice'}
           </div>
-          <div className="w-10"></div>
+          <div className="w-9"></div>
         </div>
 
-        {/* Progress Indicator */}
-        <div className="px-6 pb-4">
+        {/* Progress Indicator - Compact */}
+        <div className="px-4 pb-3">
           <div className="flex space-x-1">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((stepNum) => (
               <div
                 key={stepNum}
-                className={`h-1 flex-1 rounded-full transition-colors ${
-                  stepNum <= step ? 'bg-blue-500' : 'bg-gray-700'
+                className={`h-0.5 flex-1 rounded-full transition-colors ${
+                  stepNum <= step ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-gray-700'
                 }`}
               />
             ))}
@@ -482,23 +482,23 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
         </div>
       </div>
 
-      {/* Scrollable Content */}
+      {/* Scrollable Content - Compact */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6 pb-4">
+        <div className="p-4 pb-3">
 
           {/* Step 1: Goal Selection */}
           {step === 1 && (
               <>
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     What's your intention?
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     Choose your primary focus for this meditation.
                   </p>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3 mb-4">
                   {GOAL_OPTIONS.map((goal, index) => {
                     const gradients = [
                       'from-blue-500 to-cyan-400',
@@ -529,16 +529,16 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
           {/* Step 2: Wisdom Source Selection */}
           {step === 2 && (
               <>
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     Choose Your Wisdom Source
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     Select the philosophical foundation for your meditation.
                   </p>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3 mb-4">
                   {WISDOM_SOURCES.map((source, index) => {
                     const gradients = [
                       'from-amber-500 to-orange-400',
@@ -567,16 +567,16 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
           {/* Step 3: Feelings to Transcend (Apple-style toggles) */}
           {step === 3 && (
               <>
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     What would you like to transform?
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     Select any feelings you'd like to transcend. (Optional)
                   </p>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3 mb-4">
                   {FEELING_OPTIONS.map((feeling) => (
                     <AppleToggle
                       key={feeling.feeling}
@@ -594,19 +594,19 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
           {/* Step 4: Survey Questions (Apple-style) */}
           {step === 4 && (
               <>
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     About You
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     Help us personalize your meditation experience.
                   </p>
                 </div>
 
-                <div className="space-y-8">
+                <div className="space-y-5">
                   {SURVEY_QUESTIONS.map((question) => (
-                    <div key={question.id} className="space-y-4">
-                      <h4 className="text-xl font-semibold text-white">
+                    <div key={question.id} className="space-y-2.5">
+                      <h4 className="text-base font-semibold text-white">
                         {question.question}
                       </h4>
                       <div className="space-y-3">
@@ -630,16 +630,16 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
           {/* Step 5: Duration Selection (Apple-style) */}
           {step === 5 && (
               <>
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     Duration
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     How long would you like to meditate?
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {DURATIONS.map((duration, index) => {
                     const gradients = [
                       'from-green-500 to-emerald-400',
@@ -673,16 +673,16 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
           {/* Step 6: Simple Music Selection */}
           {step === 6 && (
               <>
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     Background Music
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     Choose your meditation background music
                   </p>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3 mb-4">
                   <AppleCard
                     isSelected={true}
                     onChange={() => handleMusicSelect('StillCaster Ambient - 5 Minutes')}
@@ -692,9 +692,9 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                     gradient="from-blue-500 to-cyan-400"
                   />
 
-                  <div className="bg-gray-800/50 border border-gray-600 rounded-2xl p-6">
-                    <h4 className="text-lg font-semibold mb-2 text-white">About This Music</h4>
-                    <ul className="text-sm text-gray-300 space-y-2">
+                  <div className="bg-gray-800/50 border border-gray-600 rounded-xl p-4">
+                    <h4 className="text-sm font-semibold mb-2 text-white">About This Music</h4>
+                    <ul className="text-xs text-gray-300 space-y-1.5">
                       <li>• 5-minute ambient background track</li>
                       <li>• Designed specifically for meditation</li>
                       <li>• Will loop automatically for longer sessions</li>
@@ -709,18 +709,18 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
           {/* Step 7: Prompt Primer */}
           {step === 7 && (
               <>
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     Personal Touch
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     Add any specific details to personalize your meditation.
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-lg font-medium mb-3 text-white">
+                    <label className="block text-sm font-medium mb-2 text-white">
                       Custom Instructions (Optional)
                     </label>
                     <textarea
@@ -728,20 +728,20 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                       onChange={(e) => setPromptPrimer(e.target.value)}
                       placeholder="e.g., Focus on gratitude, include nature imagery, help with work stress..."
                       maxLength={200}
-                      className="w-full h-24 p-4 bg-gray-800/50 border border-gray-600 rounded-2xl text-white text-base resize-none focus:border-blue-500 focus:outline-none transition-colors"
+                      className="w-full h-20 p-3 bg-gray-800/50 border border-gray-600 rounded-xl text-white text-sm resize-none focus:border-blue-500 focus:outline-none transition-colors"
                     />
-                    <div className="mt-2 text-right">
-                      <span className="text-sm text-gray-400">
+                    <div className="mt-1.5 text-right">
+                      <span className="text-xs text-gray-400">
                         {promptPrimer.length}/200
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-gray-800/50 border border-gray-600 rounded-2xl p-6">
-                    <h4 className="text-lg font-semibold mb-4 text-white">
+                  <div className="bg-gray-800/50 border border-gray-600 rounded-xl p-4">
+                    <h4 className="text-sm font-semibold mb-3 text-white">
                       Your Meditation Summary
                     </h4>
-                    <div className="space-y-3 text-sm text-gray-300">
+                    <div className="space-y-2 text-xs text-gray-300">
                       <div className="flex justify-between">
                         <span className="text-gray-400">Goal:</span>
                         <span>{selectedGoal}</span>
@@ -794,19 +794,19 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {/* Step 9: Review Script */}
             {step === 9 && (
               <>
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-3">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     Review Script
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     Your personalized meditation script is ready.
                   </p>
                 </div>
 
                 {/* Full screen script display */}
-                <div className="flex-1 bg-gray-800/50 border border-gray-600 rounded-2xl p-6 overflow-hidden">
+                <div className="flex-1 bg-gray-800/50 border border-gray-600 rounded-xl p-4 overflow-hidden">
                   <div className="h-full overflow-y-auto">
-                    <div className="text-white leading-relaxed whitespace-pre-line text-base">
+                    <div className="text-white leading-relaxed whitespace-pre-line text-sm">
                       {generatedScript}
                     </div>
                   </div>
@@ -818,34 +818,34 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
             {/* Step 10: Voice Selection */}
             {step === 10 && (
               <>
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-2">
                     Choose Your Guide
                   </h3>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-sm">
                     Select a voice for your personalized meditation.
                   </p>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3 mb-4">
                   {VOICES.map((voice) => (
                     <button
                       key={voice.id}
                       onClick={() => setSelectedVoice(voice.id)}
-                      className={`w-full p-4 rounded-2xl border transition-all duration-300 ease-out ${
+                      className={`w-full p-3 rounded-xl border transition-all duration-300 ease-out ${
                         selectedVoice === voice.id
                           ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
                           : 'border-gray-300 bg-white/5 hover:border-blue-400 hover:bg-blue-500/5'
                       } active:scale-98 transform`}
                     >
                       <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center space-x-4">
-                          <span className="text-2xl">{voice.icon}</span>
+                        <div className="flex items-center space-x-3">
+                          <span className="text-xl">{voice.icon}</span>
                           <div className="text-left">
-                            <div className={`font-semibold text-lg ${selectedVoice === voice.id ? 'text-blue-600' : 'text-white'}`}>
+                            <div className={`font-semibold text-base ${selectedVoice === voice.id ? 'text-blue-400' : 'text-white'}`}>
                               {voice.name}
                             </div>
-                            <div className="text-sm text-gray-400 mt-1">
+                            <div className="text-xs text-gray-400 mt-0.5">
                               {voice.description}
                             </div>
                           </div>
@@ -856,7 +856,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
                             handleVoicePreview(voice.id)
                           }}
                           disabled={isPlaying}
-                          className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm shrink-0 active:scale-95 transition-transform disabled:opacity-50"
+                          className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs shrink-0 active:scale-95 transition-transform disabled:opacity-50"
                         >
                           {isPlaying ? '⏹' : '▶'}
                         </button>
@@ -871,7 +871,7 @@ export default function AssessmentFlow({ onComplete, onCancel }: Props) {
       </div>
 
       {/* Fixed Footer with Continue Button */}
-      <div className="flex-shrink-0 bg-black/50 backdrop-blur-xl border-t border-gray-800/50 p-6">
+      <div className="flex-shrink-0 bg-black/50 backdrop-blur-xl border-t border-gray-800/50 p-4">
         {renderFooterButton()}
       </div>
     </div>
