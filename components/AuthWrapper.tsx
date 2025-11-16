@@ -31,6 +31,8 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         setUser({
           id: user.id,
           email: user.email,
+          first_name: user.first_name,
+          phonetic_pronunciation: user.phonetic_pronunciation,
           total_minutes: user.total_minutes,
           current_streak: user.current_streak,
           preferences: {

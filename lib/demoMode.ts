@@ -31,6 +31,8 @@ export const isDemoMode = () => {
 export const getDemoUser = () => ({
   id: 'demo-user-123',
   email: 'demo@stillcaster.com',
+  first_name: 'Demo',
+  phonetic_pronunciation: 'DEM-oh',
   total_minutes: 45,
   current_streak: 3,
   preferences: {
