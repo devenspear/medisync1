@@ -5,6 +5,8 @@ export interface User {
   id: string;
   email: string;
   password_hash: string;
+  first_name: string;
+  phonetic_pronunciation?: string;
   stripe_customer_id?: string;
   total_minutes: number;
   current_streak: number;
@@ -69,10 +71,10 @@ export interface MeditationScript {
 // Database operations
 export class Database {
   // User operations
-  static async createUser(email: string, passwordHash: string): Promise<User> {
+  static async createUser(email: string, passwordHash: string, firstName: string, phoneticPronunciation?: string): Promise<User> {
     const result = await sql`
-      INSERT INTO users (email, password_hash, total_minutes, current_streak)
-      VALUES (${email}, ${passwordHash}, 0, 0)
+      INSERT INTO users (email, password_hash, first_name, phonetic_pronunciation, total_minutes, current_streak)
+      VALUES (${email}, ${passwordHash}, ${firstName}, ${phoneticPronunciation || null}, 0, 0)
       RETURNING *
     `;
     return result.rows[0] as User;
@@ -221,6 +223,8 @@ export class Database {
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           email TEXT UNIQUE NOT NULL,
           password_hash TEXT NOT NULL,
+          first_name TEXT NOT NULL,
+          phonetic_pronunciation TEXT,
           stripe_customer_id TEXT,
           total_minutes INTEGER DEFAULT 0,
           current_streak INTEGER DEFAULT 0,
@@ -228,6 +232,19 @@ export class Database {
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         )
+      `;
+
+      // Add columns to existing table if they don't exist (migration)
+      await sql`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='first_name') THEN
+            ALTER TABLE users ADD COLUMN first_name TEXT;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='phonetic_pronunciation') THEN
+            ALTER TABLE users ADD COLUMN phonetic_pronunciation TEXT;
+          END IF;
+        END $$;
       `;
 
       // Create subscriptions table

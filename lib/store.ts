@@ -17,6 +17,8 @@ export interface AssessmentData {
   selectedFeelings: string[]
   userPrimer: string
   selectedMusic?: string // Simple music selection
+  // Personalization with user's name
+  includeUserName?: boolean // Default true - include user's first name in meditation
   // Music generation selections
   selectedPrimaryTheme?: {
     displayName: string
@@ -58,6 +60,8 @@ export interface UserPreferences {
 export interface User {
   id: string
   email: string
+  first_name: string
+  phonetic_pronunciation?: string
   total_minutes: number
   current_streak: number
   preferences: UserPreferences

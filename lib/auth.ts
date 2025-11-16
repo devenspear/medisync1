@@ -18,6 +18,8 @@ function getJWTSecret(): string {
 export interface AuthUser {
   id: string;
   email: string;
+  first_name: string;
+  phonetic_pronunciation?: string;
   total_minutes: number;
   current_streak: number;
   preferences: {
@@ -71,6 +73,8 @@ export class Auth {
     return {
       id: user.id,
       email: user.email,
+      first_name: user.first_name,
+      phonetic_pronunciation: user.phonetic_pronunciation,
       total_minutes: user.total_minutes,
       current_streak: user.current_streak,
       preferences: user.preferences
@@ -78,19 +82,24 @@ export class Auth {
   }
 
   // Sign up new user
-  static async signUp(email: string, password: string): Promise<AuthResponse> {
+  static async signUp(email: string, password: string, firstName: string): Promise<AuthResponse> {
     try {
       console.log('🔐 [Auth.signUp] Starting signup process...');
 
       // Validate input
-      if (!email || !password) {
-        console.log('🔐 [Auth.signUp] Validation failed: missing email or password');
-        return { success: false, error: 'Email and password are required' };
+      if (!email || !password || !firstName) {
+        console.log('🔐 [Auth.signUp] Validation failed: missing required fields');
+        return { success: false, error: 'Email, password, and first name are required' };
       }
 
       if (password.length < 6) {
         console.log('🔐 [Auth.signUp] Validation failed: password too short');
         return { success: false, error: 'Password must be at least 6 characters' };
+      }
+
+      if (firstName.trim().length === 0) {
+        console.log('🔐 [Auth.signUp] Validation failed: first name empty');
+        return { success: false, error: 'First name is required' };
       }
 
       console.log('🔐 [Auth.signUp] Validation passed, checking for existing user...');
@@ -108,7 +117,8 @@ export class Auth {
       const passwordHash = await this.hashPassword(password);
 
       console.log('🔐 [Auth.signUp] Password hashed, creating user in database...');
-      const user = await Database.createUser(email, passwordHash);
+      // Note: Phonetic pronunciation will be generated separately and updated via API
+      const user = await Database.createUser(email, passwordHash, firstName.trim());
 
       console.log('🔐 [Auth.signUp] User created, generating token...');
 

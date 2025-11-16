@@ -4,16 +4,18 @@ import { Auth } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   try {
     console.log('🔐 [Signup] Starting signup request...');
-    const { email, password } = await request.json();
+    const { email, password, firstName } = await request.json();
 
     console.log('🔐 [Signup] Request params:', {
       hasEmail: !!email,
       emailLength: email?.length || 0,
       hasPassword: !!password,
-      passwordLength: password?.length || 0
+      passwordLength: password?.length || 0,
+      hasFirstName: !!firstName,
+      firstNameLength: firstName?.length || 0
     });
 
-    const result = await Auth.signUp(email, password);
+    const result = await Auth.signUp(email, password, firstName);
 
     console.log('🔐 [Signup] Auth.signUp result:', {
       success: result.success,

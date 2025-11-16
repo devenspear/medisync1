@@ -6,6 +6,7 @@ import { auth } from '@/lib/authClient'
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -17,7 +18,12 @@ export default function LoginForm() {
 
     try {
       if (isSignUp) {
-        const { error } = await auth.signUp(email, password)
+        if (!firstName.trim()) {
+          setMessage('First name is required')
+          setLoading(false)
+          return
+        }
+        const { error } = await auth.signUp(email, password, firstName.trim())
         if (error) {
           setMessage(error)
         } else {
@@ -66,6 +72,21 @@ export default function LoginForm() {
                 autoCapitalize="none"
               />
             </div>
+
+            {isSignUp && (
+              <div>
+                <input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full p-4 bg-gray-800/50 border border-gray-600 rounded-2xl text-white text-base placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-colors"
+                  placeholder="First Name"
+                  required
+                  autoComplete="given-name"
+                />
+              </div>
+            )}
 
             <div>
               <input

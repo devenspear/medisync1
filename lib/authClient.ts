@@ -75,14 +75,14 @@ export class AuthClient {
   }
 
   // Sign up
-  async signUp(email: string, password: string): Promise<{ error?: string }> {
+  async signUp(email: string, password: string, firstName: string): Promise<{ error?: string }> {
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, firstName }),
       });
 
       const data = await response.json();
