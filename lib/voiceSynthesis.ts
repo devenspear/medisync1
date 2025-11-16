@@ -49,26 +49,19 @@ export class VoiceSynthesis {
     processedText = processedText.replace(/\[Closing\]/gi, '')
     processedText = processedText.replace(/\[Introduction\]/gi, '')
 
-    // SSML features temporarily disabled due to audio quality issues
-    // The SSML prosody speed control was causing compressed noise artifacts
-    // Speed should be controlled via ElevenLabs voice profile settings instead
-
-    /* DISABLED - causing audio artifacts
-    // Add natural pauses at sentence endings
+    // Add natural pauses at sentence endings using SSML breaks
+    // NOTE: Prosody rate control removed (was causing audio artifacts)
+    // Only using break tags for natural pacing
     processedText = processedText.replace(/\./g, '.<break time="1.5s"/>')
     processedText = processedText.replace(/,/g, ',<break time="0.8s"/>')
     processedText = processedText.replace(/:/g, ':<break time="1.0s"/>')
     processedText = processedText.replace(/;/g, ';<break time="1.0s"/>')
 
-    // Add emphasis on key meditation words
+    // Add emphasis on key meditation words for natural delivery
     processedText = processedText.replace(/\b(breathe|breath|relax|release|peace|calm)\b/gi, '<emphasis level="moderate">$1</emphasis>')
 
-    // Calculate speaking rate as percentage (speed 0.85 = 85%)
-    const ratePercent = Math.round(speed * 100)
-
-    // Wrap in SSML with prosody for speed control
-    processedText = `<speak><prosody rate="${ratePercent}%">${processedText}</prosody></speak>`
-    */
+    // Wrap in SSML speak tags (WITHOUT prosody rate - that caused compression artifacts)
+    processedText = `<speak>${processedText}</speak>`
 
     return processedText
   }
