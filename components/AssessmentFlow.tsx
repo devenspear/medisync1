@@ -11,7 +11,7 @@ import { AppleToggle, AppleCard, AppleProgress, ApplePillButton } from './AppleU
 const VOICES = [
   { id: 'female-1', name: 'Kelli-2', description: '50-year-old female, extremely pleasing and comforting for deep guided meditation', icon: '🎙️' },
   { id: 'female-2', name: 'Sarah', description: 'Professional & reassuring', icon: '🎙️' },
-  { id: 'male-1', name: 'Thomas', description: 'Soft & subdued for meditations', icon: '🎙️' },
+  { id: 'male-1', name: 'Bernard-1', description: 'Soft & subdued for meditations', icon: '🎙️' },
   { id: 'male-2', name: 'George', description: 'Warm British resonance', icon: '🎙️' },
 ]
 

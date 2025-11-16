@@ -22,8 +22,8 @@ export class VoiceSynthesis {
       description: 'Young adult woman with confident, warm, and reassuring professional tone'
     },
     'male-1': {
-      id: 'GBv7mTt0atIp3Br8iCZE', // Thomas - perfect for meditation
-      name: 'Thomas',
+      id: 'xtwJZRzZhlI4QAgP0tT3', // Bernard-1 - custom meditation voice
+      name: 'Bernard-1',
       description: 'Soft and subdued male voice, optimal for meditations and narrations'
     },
     'male-2': {
