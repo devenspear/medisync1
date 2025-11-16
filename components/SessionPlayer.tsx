@@ -93,6 +93,19 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       // Generate the meditation script via API
       const script = await generateScript(session.assessment_data)
 
+      console.log('📝 Script generated:', {
+        hasScript: !!script,
+        scriptType: typeof script,
+        scriptKeys: script ? Object.keys(script) : [],
+        hasIntroText: script?.intro_text !== undefined,
+        hasMainContent: script?.main_content !== undefined,
+        hasClosingText: script?.closing_text !== undefined,
+        introLength: script?.intro_text?.length || 0,
+        mainLength: script?.main_content?.length || 0,
+        closingLength: script?.closing_text?.length || 0
+      })
+      console.log('📝 Full script object:', script)
+
       setLoadingMessage('🎵 Loading background music...')
       setLoadingProgress(0.2)
 
