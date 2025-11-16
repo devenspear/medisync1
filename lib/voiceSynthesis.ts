@@ -17,8 +17,8 @@ export class VoiceSynthesis {
   // Available voices with their IDs
   private voices = {
     'female-1': {
-      id: 'm24gZfUicC3ekOb7OZfy', // Kelli-1 - your custom meditation voice
-      name: 'Kelli',
+      id: 'YRROo374F8CyWnUy6mdE', // Kelli-2 - your custom meditation voice
+      name: 'Kelli-2',
       description: '50-year-old female, extremely pleasing and comforting for deep guided meditation'
     },
     'female-2': {
