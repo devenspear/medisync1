@@ -80,27 +80,42 @@ export class Auth {
   // Sign up new user
   static async signUp(email: string, password: string): Promise<AuthResponse> {
     try {
+      console.log('🔐 [Auth.signUp] Starting signup process...');
+
       // Validate input
       if (!email || !password) {
+        console.log('🔐 [Auth.signUp] Validation failed: missing email or password');
         return { success: false, error: 'Email and password are required' };
       }
 
       if (password.length < 6) {
+        console.log('🔐 [Auth.signUp] Validation failed: password too short');
         return { success: false, error: 'Password must be at least 6 characters' };
       }
+
+      console.log('🔐 [Auth.signUp] Validation passed, checking for existing user...');
 
       // Check if user already exists
       const existingUser = await Database.findUserByEmail(email);
       if (existingUser) {
+        console.log('🔐 [Auth.signUp] User already exists');
         return { success: false, error: 'User already exists with this email' };
       }
 
+      console.log('🔐 [Auth.signUp] No existing user, hashing password...');
+
       // Hash password and create user
       const passwordHash = await this.hashPassword(password);
+
+      console.log('🔐 [Auth.signUp] Password hashed, creating user in database...');
       const user = await Database.createUser(email, passwordHash);
+
+      console.log('🔐 [Auth.signUp] User created, generating token...');
 
       // Generate token
       const token = this.generateToken(user);
+
+      console.log('✅ [Auth.signUp] Signup successful');
 
       return {
         success: true,
@@ -108,7 +123,11 @@ export class Auth {
         token
       };
     } catch (error) {
-      console.error('Sign up error:', error);
+      console.error('❌ [Auth.signUp] Error during signup:', error);
+      console.error('❌ [Auth.signUp] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       return { success: false, error: 'Failed to create account' };
     }
   }
