@@ -245,6 +245,16 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
           const mainAudio = new Audio(mainUrl)
           const closingAudio = new Audio(closingUrl)
 
+          // Explicitly disable looping for voice narration
+          introAudio.loop = false
+          mainAudio.loop = false
+          closingAudio.loop = false
+
+          // Ensure normal playback speed (1.0 = 100% speed, no time stretching)
+          introAudio.playbackRate = 1.0
+          mainAudio.playbackRate = 1.0
+          closingAudio.playbackRate = 1.0
+
           // Add error handlers
           introAudio.onerror = (e) => console.error('❌ Intro audio error:', e)
           mainAudio.onerror = (e) => console.error('❌ Main audio error:', e)

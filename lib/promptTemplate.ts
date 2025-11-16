@@ -90,15 +90,23 @@ export class PromptTemplateManager {
   }
 
   /**
-   * Calculate word count based on duration accounting for SSML pauses
+   * Calculate word count based on duration accounting for SSML pauses and music timing
    */
   calculateMaxWordCount(durationMinutes: number): number {
-    // Use 80 words per minute to account for:
-    // - Slow meditation speaking pace
-    // - SSML pause tags (1.5s after periods, 0.8s after commas)
-    // - Natural breathing room
-    // This ensures the narration fits within the requested duration
-    return Math.floor(durationMinutes * 80);
+    // Account for 10-second music intro before voice starts
+    const voiceStartDelay = 10 / 60; // 10 seconds in minutes
+
+    // Available time for voice narration (leaving room for music outro)
+    const availableMinutes = durationMinutes - voiceStartDelay - 0.17; // 0.17 min = ~10s outro
+
+    // Use 70 words per minute to account for:
+    // - Slow meditation speaking pace (ElevenLabs voice profile defaults)
+    // - SSML pause tags adding 1.5s after periods, 0.8s after commas
+    // - Natural breathing room and contemplative pacing
+    // This ensures narration fits comfortably within requested duration
+    const wordsPerMinute = 70;
+
+    return Math.max(50, Math.floor(availableMinutes * wordsPerMinute));
   }
 
   /**
