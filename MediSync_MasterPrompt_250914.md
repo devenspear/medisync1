@@ -57,6 +57,11 @@ This meditation is being created for a specific user at a specific moment in tim
 
 * **Title:** You will generate a fitting, beautiful, and empowering title for this meditation based on its content. The title should be the first line of your response.
 * **Word Count:** The total word count of the generated script (excluding the title) must NOT exceed **`{{Max_Word_Count}}` words**. This is a strict limit.
+* **Punctuation & Pacing (CRITICAL):** The script MUST use proper punctuation throughout for natural voice narration pacing:
+    * End every complete sentence with a period (.)
+    * Use commas (,) for natural pauses within sentences
+    * Use colons (:) and semicolons (;) where grammatically appropriate
+    * Proper punctuation is essential for creating natural breathing room and calm delivery in the audio narration
 * **Audio Cues:** Include simple, bracketed cues for the audio production, such as `[Pause]`, `[Gentle music swells]`, or `[A soft chime resonates]`. Use these sparingly to enhance the experience.
 * **Structural Flow:** The script must follow this approximate structure with EXPLICIT SECTION MARKERS:
     1.  **INTRO (~15% of words):** Begin with "INTRO:" on its own line, then gently guide the listener away from their external world and into their inner space. Focus on calming the body and breath.
