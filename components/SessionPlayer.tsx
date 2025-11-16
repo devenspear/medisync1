@@ -137,6 +137,17 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
           // Generate each section via API
           console.log('🎙️ Requesting voice synthesis for all sections...')
+          console.log('🎙️ Script data:', {
+            hasIntroText: !!script.intro_text,
+            hasMainContent: !!script.main_content,
+            hasClosingText: !!script.closing_text,
+            introLength: script.intro_text?.length || 0,
+            mainLength: script.main_content?.length || 0,
+            closingLength: script.closing_text?.length || 0,
+            voiceId: session.voice_id
+          })
+          console.log('🎙️ Full script object:', script)
+
           const [introResponse, mainResponse, closingResponse] = await Promise.all([
             fetch('/api/voice/synthesize', {
               method: 'POST',
