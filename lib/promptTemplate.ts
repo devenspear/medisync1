@@ -99,14 +99,23 @@ export class PromptTemplateManager {
     // Available time for voice narration (leaving room for music outro)
     const availableMinutes = durationMinutes - voiceStartDelay - 0.17; // 0.17 min = ~10s outro
 
-    // Use 70 words per minute to account for:
-    // - Slow meditation speaking pace (ElevenLabs voice profile defaults)
-    // - SSML pause tags adding 1.5s after periods, 0.8s after commas
-    // - Natural breathing room and contemplative pacing
-    // This ensures narration fits comfortably within requested duration
-    const wordsPerMinute = 70;
+    // CRITICAL FIX: ElevenLabs actually speaks at ~120-140 words per minute
+    // SSML pauses DON'T significantly extend duration because pauses are IN ADDITION to words
+    // Previous 70 wpm was causing scripts to end at ~60% of requested duration
+    //
+    // Use 130 words per minute as baseline for ElevenLabs default pace
+    // This accounts for:
+    // - Natural meditation speaking pace in ElevenLabs voice profiles
+    // - SSML breaks are added to the base speaking time
+    // - Ensures narration actually fills the requested duration
+    const wordsPerMinute = 130;
 
-    return Math.max(50, Math.floor(availableMinutes * wordsPerMinute));
+    // Add 10% safety buffer to ensure we don't run short
+    const wordCount = Math.floor(availableMinutes * wordsPerMinute * 1.1);
+
+    console.log(`📊 Duration: ${durationMinutes}min | Available: ${availableMinutes.toFixed(2)}min | Words: ${wordCount}`);
+
+    return Math.max(50, wordCount);
   }
 
   /**
