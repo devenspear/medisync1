@@ -136,6 +136,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
           setLoadingProgress(0.5)
 
           // Generate each section via API
+          console.log('🎙️ Requesting voice synthesis for all sections...')
           const [introResponse, mainResponse, closingResponse] = await Promise.all([
             fetch('/api/voice/synthesize', {
               method: 'POST',
@@ -154,18 +155,66 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
             })
           ])
 
+          console.log('🎙️ Voice API responses:', {
+            intro: { ok: introResponse.ok, status: introResponse.status, contentType: introResponse.headers.get('content-type') },
+            main: { ok: mainResponse.ok, status: mainResponse.status, contentType: mainResponse.headers.get('content-type') },
+            closing: { ok: closingResponse.ok, status: closingResponse.status, contentType: closingResponse.headers.get('content-type') }
+          })
+
           // Check if all requests succeeded
           if (!introResponse.ok || !mainResponse.ok || !closingResponse.ok) {
-            throw new Error('Voice synthesis failed')
+            // Log detailed error info
+            const errors = []
+            if (!introResponse.ok) {
+              const errorData = await introResponse.json().catch(() => ({ error: 'Unknown' }))
+              errors.push(`Intro: ${introResponse.status} - ${JSON.stringify(errorData)}`)
+            }
+            if (!mainResponse.ok) {
+              const errorData = await mainResponse.json().catch(() => ({ error: 'Unknown' }))
+              errors.push(`Main: ${mainResponse.status} - ${JSON.stringify(errorData)}`)
+            }
+            if (!closingResponse.ok) {
+              const errorData = await closingResponse.json().catch(() => ({ error: 'Unknown' }))
+              errors.push(`Closing: ${closingResponse.status} - ${JSON.stringify(errorData)}`)
+            }
+            console.error('❌ Voice synthesis failures:', errors)
+            throw new Error(`Voice synthesis failed: ${errors.join('; ')}`)
           }
 
           setLoadingMessage('🎙️ Creating audio elements...')
           setLoadingProgress(0.8)
 
           // Create audio elements from API responses
-          const introAudio = new Audio(URL.createObjectURL(await introResponse.blob()))
-          const mainAudio = new Audio(URL.createObjectURL(await mainResponse.blob()))
-          const closingAudio = new Audio(URL.createObjectURL(await closingResponse.blob()))
+          console.log('🎙️ Converting responses to blobs...')
+          const introBlob = await introResponse.blob()
+          const mainBlob = await mainResponse.blob()
+          const closingBlob = await closingResponse.blob()
+
+          console.log('🎙️ Blob sizes:', {
+            intro: introBlob.size,
+            main: mainBlob.size,
+            closing: closingBlob.size,
+            introType: introBlob.type,
+            mainType: mainBlob.type,
+            closingType: closingBlob.type
+          })
+
+          const introUrl = URL.createObjectURL(introBlob)
+          const mainUrl = URL.createObjectURL(mainBlob)
+          const closingUrl = URL.createObjectURL(closingBlob)
+
+          console.log('🎙️ Created blob URLs:', { introUrl, mainUrl, closingUrl })
+
+          const introAudio = new Audio(introUrl)
+          const mainAudio = new Audio(mainUrl)
+          const closingAudio = new Audio(closingUrl)
+
+          // Add error handlers
+          introAudio.onerror = (e) => console.error('❌ Intro audio error:', e)
+          mainAudio.onerror = (e) => console.error('❌ Main audio error:', e)
+          closingAudio.onerror = (e) => console.error('❌ Closing audio error:', e)
+
+          console.log('🎙️ Audio elements created successfully')
 
           // Set up sequential playback - intro -> main -> closing
           introAudio.onended = () => {
@@ -278,9 +327,18 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
       // Start voice guidance (either ElevenLabs audio or fallback TTS)
       if (audioElementsRef.current.intro) {
-        console.log('🎙️ Starting ElevenLabs voice narration...')
+        console.log('🎙️ Starting ElevenLabs voice narration...', {
+          hasIntro: !!audioElementsRef.current.intro,
+          hasMain: !!audioElementsRef.current.main,
+          hasClosing: !!audioElementsRef.current.closing,
+          introSrc: audioElementsRef.current.intro.src,
+          volume: volumes.voice_volume
+        })
         audioElementsRef.current.intro.volume = volumes.voice_volume
+
         audioElementsRef.current.intro.play()
+          .then(() => console.log('✅ Intro audio started playing'))
+          .catch(err => console.error('❌ Failed to start intro audio:', err))
       } else {
         // Use browser TTS for fallback - generate script via API
         console.log('🎙️ Using browser speech synthesis fallback')
