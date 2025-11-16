@@ -297,8 +297,10 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
           })
 
           setActualVoiceDuration(totalVoiceDuration)
-          const extendedDuration = Math.max(totalTime, totalVoiceDuration + 5)
-          setTotalTime(extendedDuration)
+
+          // DO NOT extend duration - respect the user's configured time
+          // The session will end at the configured duration, not based on voice length
+          console.log(`⏱️ Session will run for ${totalTime}s (configured), voice total: ${totalVoiceDuration}s`)
           setLoadingMessage('✅ ElevenLabs voice ready!')
 
         } else {
@@ -460,6 +462,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
     if (timerRef.current) {
       clearInterval(timerRef.current)
+      timerRef.current = null
     }
 
     // Update user stats
