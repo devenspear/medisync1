@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+/**
+ * Diagnostic endpoint to check environment configuration
+ */
 export async function GET() {
   return NextResponse.json({
     timestamp: new Date().toISOString(),
