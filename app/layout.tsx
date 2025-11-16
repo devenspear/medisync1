@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "StillCaster - AI-Powered Meditation Platform",
@@ -21,9 +22,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       </head>
       <body className="font-system antialiased bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white safe-area-container">
-        <div className="w-full max-w-full overflow-x-hidden">
+        <div className="w-full max-w-full overflow-x-hidden pb-12">
           {children}
         </div>
+        <Footer />
       </body>
     </html>
   );
