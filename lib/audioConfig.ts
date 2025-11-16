@@ -17,18 +17,8 @@ export interface AudioTimingConfig {
 export interface VoiceConfig {
   // Speaking rate: 0.25 (slowest) to 4.0 (fastest), 1.0 is normal
   speed: number
-
-  // Voice stability: 0.0 to 1.0 (higher = more consistent)
-  stability: number
-
-  // Similarity boost: 0.0 to 1.0 (higher = more like original voice)
-  similarity_boost: number
-
-  // Style exaggeration: 0.0 to 1.0
-  style: number
-
-  // Use speaker boost for clarity
-  use_speaker_boost: boolean
+  // Note: Other voice settings (stability, similarity_boost, style, speaker_boost)
+  // are controlled by the ElevenLabs voice profile defaults, not overridden in code
 }
 
 // Default audio timing configuration
@@ -40,11 +30,8 @@ export const DEFAULT_AUDIO_TIMING: AudioTimingConfig = {
 
 // Default voice configuration for meditation
 export const DEFAULT_VOICE_CONFIG: VoiceConfig = {
-  speed: 0.85,                // Slightly slower for meditation (was too fast at 1.0)
-  stability: 0.75,            // Consistent, calm delivery
-  similarity_boost: 0.8,      // Close to the trained voice
-  style: 0.2,                 // Subtle style variation
-  use_speaker_boost: true     // Enhanced clarity
+  speed: 0.85                 // Slightly slower for meditation (was too fast at 1.0)
+  // Other settings (stability, similarity_boost, style, speaker_boost) use ElevenLabs voice profile defaults
 }
 
 // Preset voice speeds for user selection

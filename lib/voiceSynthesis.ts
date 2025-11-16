@@ -2,12 +2,7 @@ export interface VoiceOptions {
   voice_id: string
   text: string
   model_id?: string
-  voice_settings?: {
-    stability: number
-    similarity_boost: number
-    style?: number
-    use_speaker_boost?: boolean
-  }
+  // voice_settings omitted - ElevenLabs will use the voice profile defaults
 }
 
 export class VoiceSynthesis {
@@ -84,13 +79,8 @@ export class VoiceSynthesis {
     const options: VoiceOptions = {
       voice_id: voice.id,
       text: processedText,
-      model_id: 'eleven_multilingual_v2',
-      voice_settings: {
-        stability: 0.75,
-        similarity_boost: 0.8,
-        style: 0.2,
-        use_speaker_boost: true
-      }
+      model_id: 'eleven_multilingual_v2'
+      // Note: voice_settings intentionally omitted to use ElevenLabs voice profile defaults
     }
 
     try {
@@ -103,8 +93,8 @@ export class VoiceSynthesis {
         },
         body: JSON.stringify({
           text: options.text,
-          model_id: options.model_id,
-          voice_settings: options.voice_settings
+          model_id: options.model_id
+          // voice_settings omitted - uses voice profile defaults from ElevenLabs
         }),
       })
 

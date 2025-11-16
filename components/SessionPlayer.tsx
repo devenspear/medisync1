@@ -11,7 +11,6 @@ import { DEFAULT_AUDIO_TIMING } from '@/lib/audioConfig'
 // Audio timing configuration
 const VOICE_START_DELAY = DEFAULT_AUDIO_TIMING.voiceStartDelay // Voice starts after music (10s)
 const MUSIC_FADE_AFTER_VOICE = DEFAULT_AUDIO_TIMING.musicFadeAfterVoice // Music continues after voice (10s)
-const VOICE_SPEED = 0.85 // Speaking rate: 0.85 = 85% of normal speed (slower for meditation)
 
 interface SessionPlayerProps {
   session: SessionConfig
@@ -33,6 +32,7 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [loadingMessage, setLoadingMessage] = useState('Initializing...')
   const [volumes, setVolumes] = useState(session.layers)
+  const [voiceSpeed, setVoiceSpeed] = useState(0.85) // Speaking rate: 0.85 = 85% of normal speed
 
   const audioEngine = useRef(getAudioEngine())
   const musicSynthesis = useRef(createMusicSynthesis())
@@ -177,17 +177,17 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
             fetch('/api/voice/synthesize', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: script.intro_text, voiceId: session.voice_id, speed: VOICE_SPEED })
+              body: JSON.stringify({ text: script.intro_text, voiceId: session.voice_id, speed: voiceSpeed })
             }),
             fetch('/api/voice/synthesize', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: script.main_content, voiceId: session.voice_id, speed: VOICE_SPEED })
+              body: JSON.stringify({ text: script.main_content, voiceId: session.voice_id, speed: voiceSpeed })
             }),
             fetch('/api/voice/synthesize', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: script.closing_text, voiceId: session.voice_id, speed: VOICE_SPEED })
+              body: JSON.stringify({ text: script.closing_text, voiceId: session.voice_id, speed: voiceSpeed })
             })
           ])
 
@@ -335,9 +335,17 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
           setActualVoiceDuration(totalVoiceDuration)
 
-          // DO NOT extend duration - respect the user's configured time
-          // The session will end at the configured duration, not based on voice length
-          console.log(`⏱️ Session will run for ${totalTime}s (configured), voice total: ${totalVoiceDuration}s`)
+          // Calculate total session time based on voice duration + delays + fade
+          // Total = voice delay + voice duration + music fade after voice
+          const calculatedTotalTime = Math.ceil(VOICE_START_DELAY + totalVoiceDuration + MUSIC_FADE_AFTER_VOICE)
+          setTotalTime(calculatedTotalTime)
+          console.log(`⏱️ Session duration calculated:`, {
+            voiceStartDelay: VOICE_START_DELAY,
+            totalVoiceDuration,
+            musicFadeAfterVoice: MUSIC_FADE_AFTER_VOICE,
+            calculatedTotal: calculatedTotalTime,
+            originalConfigured: session.duration * 60
+          })
           setLoadingMessage('✅ ElevenLabs voice ready!')
 
         } else {
@@ -522,19 +530,16 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       setCurrentTime(prev => {
         const newTime = prev + 1
 
-        // Implement music fade-out during final 5 seconds
-        const remainingTime = totalTime - newTime
-        if (remainingTime <= 5 && remainingTime > 0) {
-          const fadeVolume = (remainingTime / 5) * volumes.music_volume
-          console.log(`🎵 Fading music: ${remainingTime}s remaining, volume: ${fadeVolume}`)
-          audioEngine.current.setMusicVolume(fadeVolume)
-        }
+        // Timer just tracks elapsed time - session end is controlled by voice completion
+        // (closingAudio.onended handles music fade and session completion)
 
-        if (newTime >= totalTime) {
-          console.log('⏰ Session time complete - stopping session')
+        // Safety check: if timer exceeds total time significantly, something went wrong
+        if (newTime > totalTime + 30) {
+          console.warn('⚠️ Session timer exceeded expected duration by 30s - force stopping')
           stopSession()
           return totalTime
         }
+
         return newTime
       })
     }, 1000)
@@ -793,6 +798,27 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
               onChange={(e) => handleVolumeChange('voice_volume', parseFloat(e.target.value))}
               className="ios-slider"
             />
+          </div>
+
+          {/* Voice Speed */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-white font-medium">⚡ Voice Speed</label>
+              <span className="text-gray-400 text-sm">{Math.round(voiceSpeed * 100)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0.65"
+              max="1.15"
+              step="0.05"
+              value={voiceSpeed}
+              onChange={(e) => setVoiceSpeed(parseFloat(e.target.value))}
+              className="ios-slider"
+              disabled={phase !== 'ready'}
+            />
+            {phase !== 'ready' && (
+              <p className="text-xs text-gray-500 mt-2">Speed can only be adjusted before starting the session</p>
+            )}
           </div>
 
           {/* Save Button */}
