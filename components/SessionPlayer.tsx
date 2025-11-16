@@ -106,6 +106,12 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
       })
       console.log('📝 Full script object:', script)
 
+      // Workaround: If main_content is missing or empty, use intro_text as fallback
+      if (!script.main_content || script.main_content.trim().length === 0) {
+        console.warn('⚠️ main_content is empty, using intro_text as fallback')
+        script.main_content = script.intro_text || 'Take a deep breath and relax.'
+      }
+
       setLoadingMessage('🎵 Loading background music...')
       setLoadingProgress(0.2)
 
