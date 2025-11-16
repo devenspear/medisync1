@@ -21,6 +21,79 @@ StillCaster is a sophisticated meditation application that generates personalize
 - **Debug Console**: Comprehensive testing tools for audio systems
 - **Demo Mode**: Full functionality preview without API requirements
 
+## 📋 Current Development Status (Resume Tomorrow)
+
+**Date**: November 16, 2025
+**Production URL**: https://stillcaster.app (recently migrated from medisync1-eight.vercel.app)
+
+### ✅ Completed Today
+1. **Fixed Voice Narration Timing Issue**
+   - Updated word-per-minute calculation from 70 to 130 wpm in `lib/promptTemplate.ts`
+   - Voice narration now fills the full requested duration (was ending at 1:46 for 3-minute sessions)
+
+2. **Created Admin Experimentation Page** (`/admin`)
+   - Full-browser-width layout (not mobile-constrained)
+   - Complete SSML pause controls (periods, commas, colons, semicolons)
+   - ElevenLabs voice_settings parameters (stability, similarity, style, speaker boost)
+   - Real-time voice synthesis testing with audio playback
+   - Generated SSML display and audio duration feedback
+
+3. **Fixed Admin Page Layout**
+   - Created `ConditionalContainer` component for pathname-based layout control
+   - Admin pages now display at full browser width
+   - All other pages remain mobile-optimized (max-w-md)
+
+4. **Database Setup**
+   - Connected Neon Postgres database to Vercel project
+   - Environment variables configured (`POSTGRES_URL`, etc.)
+   - Migration logic in place for `first_name` and `phonetic_pronunciation` columns
+
+### ⏳ Pending Tasks (Start Here Tomorrow)
+
+1. **Initialize Database** ⚠️ CRITICAL - DO THIS FIRST
+   - Visit: **https://stillcaster.app/api/init-db**
+   - This creates all database tables and adds missing columns
+   - Required to fix the 400 Bad Request error on signup
+
+2. **Test Signup Flow**
+   - After database initialization, create a new account
+   - Verify first name field works correctly
+   - Confirm no 400 errors
+
+3. **Test Admin Page**
+   - Visit: https://stillcaster.app/admin
+   - Verify full browser width (not mobile width)
+   - Test voice synthesis controls with sample meditation text
+
+4. **Test Voice Narration Timing**
+   - Create a 3-minute meditation session
+   - Verify voice narration plays for full 3 minutes (not 1:46)
+   - Confirm no looping behavior
+
+5. **Phase 2: Name Personalization** (Future Work)
+   - Add name inclusion checkbox to AssessmentFlow Step 7
+   - Show user's name with phonetic pronunciation
+   - Enable editing of phonetic pronunciation
+   - Integrate into meditation scripts when enabled
+
+### 🔧 Key Files Modified
+- `lib/promptTemplate.ts:37-56` - Word count calculation fix
+- `app/admin/page.tsx` - Admin experimentation UI
+- `app/api/admin/voice-test/route.ts` - Voice testing endpoint
+- `components/ConditionalContainer.tsx` - Layout control component
+- `app/layout.tsx` - Updated to use ConditionalContainer
+- `lib/database.ts:237-248` - Database migration logic
+- `app/api/init-db/route.ts` - Database initialization endpoint
+
+### 🗄️ Database Schema
+Tables created by initialization:
+- `users` (with first_name, phonetic_pronunciation)
+- `subscriptions` (Stripe integration)
+- `session_configs` (saved meditation sessions)
+- `meditation_scripts` (generated content)
+- `session_completions` (usage tracking)
+- `cached_meditation_scripts` (performance optimization)
+
 ## 🛠 Technology Stack
 
 - **Frontend**: Next.js 15.5.3, React 19, TypeScript
