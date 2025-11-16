@@ -3,11 +3,18 @@ import Stripe from 'stripe';
 import { withAuth, AuthUser } from '@/lib/auth';
 import { Database } from '@/lib/database';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Lazy-load Stripe to avoid build-time initialization errors
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured');
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-08-27.basil',
+  });
+}
 
 async function handler(req: NextRequest & { user: AuthUser }) {
+  const stripe = getStripe();
   try {
     const user = await Database.findUserByEmail(req.user.email);
     if (!user || !user.stripe_customer_id) {
