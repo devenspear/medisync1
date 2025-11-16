@@ -38,18 +38,18 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-black text-white">
       <div className="flex flex-col min-h-screen">
         {/* Demo Mode Banner */}
         {isDemoMode() && (
-          <div className="p-6">
-            <div className="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-4">
-              <div className="flex items-start space-x-3">
-                <span className="text-orange-400 text-lg mt-0.5">⚡</span>
+          <div className="px-4 pt-4 mobile-compact-xs">
+            <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3">
+              <div className="flex items-start space-x-2">
+                <span className="text-orange-400 text-base mt-0.5">⚡</span>
                 <div>
-                  <p className="text-lg font-semibold text-orange-100 mb-1">Demo Mode</p>
-                  <p className="text-orange-200/80 leading-relaxed">
-                    You're experiencing StillCaster with sample data. Add API keys to enable full functionality.
+                  <p className="text-sm font-semibold text-orange-100 mb-0.5">Demo Mode</p>
+                  <p className="text-xs text-orange-200/80 leading-snug">
+                    Sample data active. Add API keys for full features.
                   </p>
                 </div>
               </div>
@@ -57,98 +57,95 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Header */}
-        <div className="p-6">
+        {/* Header - Compact */}
+        <div className="px-4 py-3 mobile-compact">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">Good Evening</h1>
-              <p className="text-gray-400">{user?.email}</p>
+              <h1 className="text-xl font-bold text-white mb-0.5">Good Evening</h1>
+              <p className="text-sm text-gray-400">{user?.email}</p>
             </div>
             <button
               onClick={handleSignOut}
-              className="w-11 h-11 bg-gray-800/50 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-all"
+              className="w-10 h-10 bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-full flex items-center justify-center text-gray-300 active:scale-95 transition-all shadow-lg"
             >
-              <span className="text-lg">⚙️</span>
+              <span className="text-base">⚙️</span>
             </button>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="px-6 pb-6">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-blue-400 mb-1">{user?.total_minutes || 0}</p>
-              <p className="text-xs uppercase tracking-wide text-gray-400">Minutes</p>
+        {/* Stats Cards - Compact */}
+        <div className="px-4 pb-3 mobile-compact-xs">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/30 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-blue-300 mb-0.5">{user?.total_minutes || 0}</p>
+              <p className="text-[10px] uppercase tracking-wide text-blue-200/70">Minutes</p>
             </div>
-            <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-green-400 mb-1">{user?.current_streak || 0}</p>
-              <p className="text-xs uppercase tracking-wide text-gray-400">Day Streak</p>
+            <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-green-300 mb-0.5">{user?.current_streak || 0}</p>
+              <p className="text-[10px] uppercase tracking-wide text-green-200/70">Day Streak</p>
             </div>
-            <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold text-purple-400 mb-1">{savedSessions.length}</p>
-              <p className="text-xs uppercase tracking-wide text-gray-400">Sessions</p>
+            <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/30 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-purple-300 mb-0.5">{savedSessions.length}</p>
+              <p className="text-[10px] uppercase tracking-wide text-purple-200/70">Sessions</p>
             </div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="px-6 pb-6">
-          <div className="space-y-4">
+        {/* Quick Actions - Compact */}
+        <div className="px-4 pb-3 mobile-compact-xs">
+          <div className="space-y-2.5">
             <button
               onClick={() => setShowAssessment(true)}
-              className="w-full bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 text-left active:scale-[0.98] transition-transform shadow-lg shadow-blue-500/30"
+              className="w-full bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl p-4 text-left active:scale-[0.98] transition-transform shadow-lg shadow-purple-500/30"
             >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xl font-semibold text-white">Start New Session</h3>
-                <span className="text-2xl">✨</span>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-base font-semibold text-white">Start New Session</h3>
+                <span className="text-xl">✨</span>
               </div>
-              <p className="text-blue-100 leading-relaxed">
+              <p className="text-xs text-indigo-100 leading-snug">
                 Create a personalized meditation with AI guidance
               </p>
             </button>
 
-            <button className="w-full bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6 text-left active:scale-[0.98] transition-transform">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-white">Quick Meditation</h3>
-                <span className="text-xl">🧘‍♀️</span>
+            <button className="w-full bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-700/50 rounded-xl p-4 text-left active:scale-[0.98] transition-transform">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-semibold text-white">Quick Meditation</h3>
+                <span className="text-lg">🧘‍♀️</span>
               </div>
-              <p className="text-gray-400">Use your last configuration</p>
+              <p className="text-xs text-gray-400 leading-snug">Use your last configuration</p>
             </button>
           </div>
         </div>
 
-        {/* Saved Sessions */}
+        {/* Saved Sessions - Compact */}
         {savedSessions.length > 0 && (
-          <div className="px-6 pb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white">Your Sessions</h2>
+          <div className="px-4 pb-3 mobile-compact-xs">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-base font-bold text-white">Your Sessions</h2>
               {savedSessions.length > 2 && (
-                <button className="text-blue-400 font-medium">
-                  View All ({savedSessions.length})
+                <button className="text-xs text-blue-400 font-medium">
+                  All ({savedSessions.length})
                 </button>
               )}
             </div>
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-700/50">
-              <div className="max-h-32 overflow-y-auto">
-                <div className="divide-y divide-gray-700/50">
+            <div className="bg-gray-900/40 backdrop-blur-sm rounded-xl border border-gray-700/40">
+              <div className="max-h-28 overflow-y-auto">
+                <div className="divide-y divide-gray-700/30">
                   {savedSessions.slice(0, 2).map((session, index) => (
                     <div
                       key={index}
-                      className="p-4 first:rounded-t-2xl last:rounded-b-2xl"
+                      className="p-3 first:rounded-t-xl last:rounded-b-xl"
                     >
                       <div className="flex items-start justify-between flex-1">
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-lg font-semibold text-white mb-1 truncate">{session.name}</h4>
-                          <p className="text-gray-400">
+                          <h4 className="text-sm font-semibold text-white mb-0.5 truncate">{session.name}</h4>
+                          <p className="text-xs text-gray-400">
                             {session.duration} min • {session.layers.music_type}
                           </p>
-                          {session.description && (
-                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{session.description}</p>
-                          )}
                         </div>
                         <button
                           onClick={() => setCurrentSession(session)}
-                          className="ml-3 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg shrink-0 active:scale-95 transition-transform"
+                          className="ml-2 w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm shrink-0 active:scale-95 transition-transform shadow-lg"
                         >
                           ▶
                         </button>
@@ -156,9 +153,9 @@ export default function Dashboard() {
                     </div>
                   ))}
                   {savedSessions.length > 2 && (
-                    <div className="p-4 text-center border-t border-gray-700">
-                      <button className="w-full py-2 text-blue-400 font-medium">
-                        Show {savedSessions.length - 2} More Sessions
+                    <div className="p-2 text-center border-t border-gray-700/30">
+                      <button className="w-full py-1.5 text-xs text-blue-400 font-medium">
+                        Show {savedSessions.length - 2} More
                       </button>
                     </div>
                   )}
@@ -169,7 +166,7 @@ export default function Dashboard() {
         )}
 
         {/* Bottom Safe Area Padding */}
-        <div className="pb-8"></div>
+        <div className="pb-6"></div>
       </div>
     </div>
   )

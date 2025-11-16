@@ -844,3 +844,94 @@ body {
     border-width: 2px;
   }
 }
+
+/* Fixed mobile container - ensures no layout shift */
+.fixed-mobile-container {
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile-optimized gradients */
+.meditation-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.meditation-gradient-secondary {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.meditation-gradient-calm {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.meditation-gradient-focus {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.meditation-gradient-energy {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Compact button for mobile - fits more on screen */
+.btn-compact {
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 15px;
+}
+
+/* Extra compact for option buttons */
+.btn-xs {
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* Single screen optimization - reduce vertical spacing */
+.mobile-compact {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.mobile-compact-xs {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+/* Enhanced touch targets for mobile */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Grid for mobile option selection */
+.mobile-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.mobile-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* Single screen layout - no scroll needed */
+@media (max-height: 667px) {
+  /* iPhone SE/8 height */
+  .mobile-compact {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .btn-compact {
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+}
