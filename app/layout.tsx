@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import ConditionalContainer from "@/components/ConditionalContainer";
 
 export const metadata: Metadata = {
   title: "StillCaster - AI-Powered Meditation Platform",
@@ -22,9 +23,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       </head>
       <body className="font-system antialiased bg-gradient-to-br from-indigo-950 via-gray-900 to-black text-white safe-area-container">
-        <div className="w-full max-w-md mx-auto overflow-x-hidden pb-12 fixed-mobile-container">
+        <ConditionalContainer>
           {children}
-        </div>
+        </ConditionalContainer>
         <Footer />
       </body>
     </html>
