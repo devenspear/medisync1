@@ -3,12 +3,17 @@ import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
 import { Database, type User } from './database';
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
-}
-
-const JWT_SECRET = process.env.JWT_SECRET;
+// JWT_SECRET will be validated at runtime when actually used
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const JWT_EXPIRES_IN = '7d';
+
+// Helper to ensure JWT_SECRET is set in production
+function getJWTSecret(): string {
+  if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required in production');
+  }
+  return JWT_SECRET;
+}
 
 export interface AuthUser {
   id: string;
@@ -47,7 +52,7 @@ export class Auth {
         id: user.id,
         email: user.email
       },
-      JWT_SECRET,
+      getJWTSecret(),
       { expiresIn: JWT_EXPIRES_IN }
     );
   }
@@ -55,7 +60,7 @@ export class Auth {
   // Verify JWT token
   static verifyToken(token: string): { id: string; email: string } | null {
     try {
-      return jwt.verify(token, JWT_SECRET) as { id: string; email: string };
+      return jwt.verify(token, getJWTSecret()) as { id: string; email: string };
     } catch (error) {
       return null;
     }
