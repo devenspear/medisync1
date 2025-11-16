@@ -6,6 +6,12 @@ import { getAudioEngine } from '@/lib/audioEngineV2'
 import { type MeditationScript } from '@/lib/scriptGenerator'
 import { createVoiceSynthesis, FallbackVoiceSynthesis } from '@/lib/voiceSynthesis'
 import { createMusicSynthesis, type MusicGenerationOptions } from '@/lib/musicSynthesis'
+import { DEFAULT_AUDIO_TIMING } from '@/lib/audioConfig'
+
+// Audio timing configuration
+const VOICE_START_DELAY = DEFAULT_AUDIO_TIMING.voiceStartDelay // Voice starts after music (10s)
+const MUSIC_FADE_AFTER_VOICE = DEFAULT_AUDIO_TIMING.musicFadeAfterVoice // Music continues after voice (10s)
+const VOICE_SPEED = 0.85 // Speaking rate: 0.85 = 85% of normal speed (slower for meditation)
 
 interface SessionPlayerProps {
   session: SessionConfig
@@ -171,17 +177,17 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
             fetch('/api/voice/synthesize', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: script.intro_text, voiceId: session.voice_id })
+              body: JSON.stringify({ text: script.intro_text, voiceId: session.voice_id, speed: VOICE_SPEED })
             }),
             fetch('/api/voice/synthesize', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: script.main_content, voiceId: session.voice_id })
+              body: JSON.stringify({ text: script.main_content, voiceId: session.voice_id, speed: VOICE_SPEED })
             }),
             fetch('/api/voice/synthesize', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: script.closing_text, voiceId: session.voice_id })
+              body: JSON.stringify({ text: script.closing_text, voiceId: session.voice_id, speed: VOICE_SPEED })
             })
           ])
 
@@ -265,6 +271,37 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
           closingAudio.onended = () => {
             console.log('🎙️ All voice segments completed')
+
+            // Start music fade-out after voice completes
+            const musicAudio = audioEngine.current.getMusicAudio()
+            if (musicAudio && phaseRef.current === 'playing') {
+              console.log(`🎵 Starting ${MUSIC_FADE_AFTER_VOICE}s music fade-out after voice completion...`)
+
+              const fadeSteps = 20 // Number of fade steps for smooth transition
+              const fadeInterval = (MUSIC_FADE_AFTER_VOICE * 1000) / fadeSteps
+              const initialVolume = musicAudio.volume
+              const volumeStep = initialVolume / fadeSteps
+              let currentStep = 0
+
+              const fadeTimer = setInterval(() => {
+                currentStep++
+                const newVolume = Math.max(0, initialVolume - (volumeStep * currentStep))
+
+                if (musicAudio && phaseRef.current === 'playing') {
+                  musicAudio.volume = newVolume
+                  audioEngine.current.setMusicVolume(newVolume)
+                  console.log(`🎵 Fade step ${currentStep}/${fadeSteps}: volume ${newVolume.toFixed(2)}`)
+                }
+
+                if (currentStep >= fadeSteps) {
+                  clearInterval(fadeTimer)
+                  console.log('🎵 Music fade complete, ending session')
+                  if (phaseRef.current === 'playing') {
+                    stopSession()
+                  }
+                }
+              }, fadeInterval)
+            }
           }
 
           audioElementsRef.current.intro = introAudio
@@ -359,18 +396,25 @@ export default function SessionPlayer({ session, onClose }: SessionPlayerProps) 
 
       // Start voice guidance (either ElevenLabs audio or fallback TTS)
       if (audioElementsRef.current.intro) {
-        console.log('🎙️ Starting ElevenLabs voice narration...', {
+        console.log(`🎙️ Voice narration will start in ${VOICE_START_DELAY} seconds...`, {
           hasIntro: !!audioElementsRef.current.intro,
           hasMain: !!audioElementsRef.current.main,
           hasClosing: !!audioElementsRef.current.closing,
           introSrc: audioElementsRef.current.intro.src,
-          volume: volumes.voice_volume
+          volume: volumes.voice_volume,
+          delay: VOICE_START_DELAY
         })
-        audioElementsRef.current.intro.volume = volumes.voice_volume
 
-        audioElementsRef.current.intro.play()
-          .then(() => console.log('✅ Intro audio started playing'))
-          .catch(err => console.error('❌ Failed to start intro audio:', err))
+        // Delay voice start to allow music to establish
+        setTimeout(() => {
+          if (audioElementsRef.current.intro && phaseRef.current === 'playing') {
+            console.log('🎙️ Starting ElevenLabs voice narration NOW...')
+            audioElementsRef.current.intro.volume = volumes.voice_volume
+            audioElementsRef.current.intro.play()
+              .then(() => console.log('✅ Intro audio started playing'))
+              .catch(err => console.error('❌ Failed to start intro audio:', err))
+          }
+        }, VOICE_START_DELAY * 1000)
       } else {
         // Use browser TTS for fallback - generate script via API
         console.log('🎙️ Using browser speech synthesis fallback')

@@ -6,12 +6,13 @@ export async function POST(request: NextRequest) {
 
   try {
     console.log('🎙️ [Voice Synthesis] Starting request...')
-    const { text, voiceId } = await request.json()
+    const { text, voiceId, speed = 0.85 } = await request.json()
 
     console.log('🎙️ [Voice Synthesis] Request params:', {
       textLength: text?.length || 0,
       textPreview: text?.substring(0, 100) + '...',
       voiceId,
+      speed,
       hasElevenLabsKey: !!process.env.ELEVENLABS_API_KEY
     })
 
@@ -34,10 +35,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🎙️ [Voice Synthesis] Calling ElevenLabs API...')
+    console.log('🎙️ [Voice Synthesis] Calling ElevenLabs API with speed:', speed)
 
-    // Generate voice audio
-    const audioBuffer = await voiceSynthesis.synthesizeText(text, voiceId)
+    // Generate voice audio with configurable speed
+    const audioBuffer = await voiceSynthesis.synthesizeText(text, voiceId, speed)
 
     const duration = Date.now() - startTime
     console.log('✅ [Voice Synthesis] Success!', {

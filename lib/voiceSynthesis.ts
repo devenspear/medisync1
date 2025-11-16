@@ -43,7 +43,7 @@ export class VoiceSynthesis {
   }
 
   // Clean and format meditation script text for natural TTS reading
-  private processScriptText(text: string): string {
+  private processScriptText(text: string, speed: number = 0.85): string {
     let processedText = text
 
     // Remove script formatting tags that shouldn't be read aloud
@@ -63,20 +63,23 @@ export class VoiceSynthesis {
     // Add emphasis on key meditation words
     processedText = processedText.replace(/\b(breathe|breath|relax|release|peace|calm)\b/gi, '<emphasis level="moderate">$1</emphasis>')
 
-    // Wrap in SSML speak tags
-    processedText = `<speak>${processedText}</speak>`
+    // Calculate speaking rate as percentage (speed 0.85 = 85%)
+    const ratePercent = Math.round(speed * 100)
+
+    // Wrap in SSML with prosody for speed control
+    processedText = `<speak><prosody rate="${ratePercent}%">${processedText}</prosody></speak>`
 
     return processedText
   }
 
-  async synthesizeText(text: string, voiceId: string): Promise<ArrayBuffer> {
+  async synthesizeText(text: string, voiceId: string, speed: number = 0.85): Promise<ArrayBuffer> {
     const voice = this.voices[voiceId as keyof typeof this.voices]
     if (!voice) {
       throw new Error(`Voice ID ${voiceId} not found`)
     }
 
-    // Process the text to remove formatting tags and add natural pauses
-    const processedText = this.processScriptText(text)
+    // Process the text to remove formatting tags, add natural pauses, and set speed
+    const processedText = this.processScriptText(text, speed)
 
     const options: VoiceOptions = {
       voice_id: voice.id,
