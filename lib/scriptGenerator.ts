@@ -88,7 +88,21 @@ export class ScriptGenerator {
       const generatedText = data.choices[0].message.content
 
       console.log('✅ Successfully generated script with master prompt template')
-      return this.parseScriptWithTitle(generatedText, assessment.duration)
+      console.log('📄 Raw OpenAI response (first 500 chars):', generatedText.substring(0, 500))
+      console.log('📄 Looking for section markers (INTRO:, MAIN:, CLOSING:):', {
+        hasIntro: generatedText.includes('INTRO:'),
+        hasMain: generatedText.includes('MAIN:'),
+        hasClosing: generatedText.includes('CLOSING:')
+      })
+
+      const parsed = this.parseScriptWithTitle(generatedText, assessment.duration)
+      console.log('📊 Parsed result:', {
+        introLength: parsed.intro_text.length,
+        mainLength: parsed.main_content.length,
+        closingLength: parsed.closing_text.length
+      })
+
+      return parsed
 
     } catch (error) {
       console.error('Script generation failed:', error)

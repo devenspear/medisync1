@@ -58,10 +58,12 @@ This meditation is being created for a specific user at a specific moment in tim
 * **Title:** You will generate a fitting, beautiful, and empowering title for this meditation based on its content. The title should be the first line of your response.
 * **Word Count:** The total word count of the generated script (excluding the title) must NOT exceed **`{{Max_Word_Count}}` words**. This is a strict limit.
 * **Audio Cues:** Include simple, bracketed cues for the audio production, such as `[Pause]`, `[Gentle music swells]`, or `[A soft chime resonates]`. Use these sparingly to enhance the experience.
-* **Structural Flow:** The script must follow this approximate structure:
-    1.  **Induction (~15% of words):** Gently guide the listener away from their external world and into their inner space. Focus on calming the body and breath.
-    2.  **Core Message (~60% of words):** This is the main part of the meditation. Address the user's specific goal and primer by weaving in the `{{Wisdom_Snippet}}` and providing powerful, positive affirmations. Reframe their challenge into a realization of their inner power.
-    3.  **Integration & Re-emergence (~25% of words):** Conclude with the most powerful affirmations of oneness and wholeness. Gently guide the listener's awareness back to their body and the room, instructing them to carry this new feeling with them.
+* **Structural Flow:** The script must follow this approximate structure with EXPLICIT SECTION MARKERS:
+    1.  **INTRO (~15% of words):** Begin with "INTRO:" on its own line, then gently guide the listener away from their external world and into their inner space. Focus on calming the body and breath.
+    2.  **MAIN (~60% of words):** Begin with "MAIN:" on its own line, then deliver the core message. Address the user's specific goal and primer by weaving in the `{{Wisdom_Snippet}}` and providing powerful, positive affirmations. Reframe their challenge into a realization of their inner power.
+    3.  **CLOSING (~25% of words):** Begin with "CLOSING:" on its own line, then conclude with the most powerful affirmations of oneness and wholeness. Gently guide the listener's awareness back to their body and the room, instructing them to carry this new feeling with them.
+
+**IMPORTANT:** You MUST include the section markers "INTRO:", "MAIN:", and "CLOSING:" on their own lines to separate these sections.
 
 ---
 
