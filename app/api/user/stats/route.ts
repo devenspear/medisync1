@@ -29,13 +29,17 @@ async function GET(request: NextRequest & { user: any }) {
     const mostUsedFrequency = Object.entries(frequencyCount)
       .sort(([,a], [,b]) => b - a)[0]?.[0] || 'alpha';
 
+    // Get subscription status
+    const subscription = await Database.findSubscriptionByUserId(request.user.id);
+
     const stats = {
       total_minutes: user.total_minutes,
       current_streak: user.current_streak,
       total_saved_sessions: totalSavedSessions,
       average_session_duration: Math.round(averageSessionDuration),
       most_used_frequency: mostUsedFrequency,
-      subscription_tier: user.subscription_tier,
+      subscription_status: subscription ? subscription.status : 'none',
+      is_premium: subscription && subscription.status === 'active',
       created_at: user.created_at,
       preferences: user.preferences
     };

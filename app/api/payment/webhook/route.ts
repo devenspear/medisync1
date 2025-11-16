@@ -2,109 +2,53 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Database } from '@/lib/database';
 
-// POST /api/payment/webhook - Handle Stripe webhooks
-export async function POST(request: NextRequest) {
-  // Check if Stripe is configured
-  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return NextResponse.json(
-      { error: 'Payment webhook not configured' },
-      { status: 503 }
-    );
-  }
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-08-27.basil',
+});
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2025-08-27.basil',
-  });
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-  const body = await request.text();
-  const signature = request.headers.get('stripe-signature') || '';
+export async function POST(req: NextRequest) {
+  const buf = await req.text();
+  const sig = req.headers.get('stripe-signature')!;
 
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
-    return NextResponse.json(
-      { error: 'Webhook signature verification failed' },
-      { status: 400 }
-    );
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    // On error, log and return the error message.
+    console.log(`❌ Error message: ${errorMessage}`);
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 
-  try {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.client_reference_id;
+  // Successfully constructed event.
+  console.log('✅ Success:', event.id);
 
-        if (userId) {
-          // Upgrade user to premium
-          await Database.updateUser(userId, {
-            subscription_tier: 'premium'
-          });
-          console.log(`✅ User ${userId} upgraded to premium`);
-        }
-        break;
-      }
-
-      case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const customerId = invoice.customer as string;
-
-        if (customerId) {
-          // Retrieve customer to get user ID
-          const customer = await stripe.customers.retrieve(customerId);
-          if ('metadata' in customer && customer.metadata.user_id) {
-            await Database.updateUser(customer.metadata.user_id, {
-              subscription_tier: 'premium'
-            });
-            console.log(`✅ User ${customer.metadata.user_id} payment succeeded`);
-          }
-        }
-        break;
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const customerId = invoice.customer as string;
-
-        if (customerId) {
-          const customer = await stripe.customers.retrieve(customerId);
-          if ('metadata' in customer && customer.metadata.user_id) {
-            console.log(`❌ Payment failed for user ${customer.metadata.user_id}`);
-            // Could send email notification here
-          }
-        }
-        break;
-      }
-
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
-
-        if (customerId) {
-          const customer = await stripe.customers.retrieve(customerId);
-          if ('metadata' in customer && customer.metadata.user_id) {
-            // Downgrade user to free
-            await Database.updateUser(customer.metadata.user_id, {
-              subscription_tier: 'free'
-            });
-            console.log(`⬇️  User ${customer.metadata.user_id} downgraded to free`);
-          }
-        }
-        break;
-      }
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
-
-    return NextResponse.json({ received: true });
-  } catch (error) {
-    console.error('Webhook handler error:', error);
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 500 }
+  // TODO: Fix Stripe webhook types for new API version  // Cast event data to Stripe object.
+  if (event.type === 'customer.subscription.created') {
+    const subscription = event.data.object as any; // TODO: Fix Stripe types
+    await Database.createSubscription(
+      subscription.id,
+      subscription.customer as string,
+      subscription.items.data[0].plan.id,
+      subscription.status,
+      new Date((subscription.current_period_end || subscription.currentPeriodEnd) * 1000)
     );
+  } else if (event.type === 'customer.subscription.updated') {
+    const subscription = event.data.object as any; // TODO: Fix Stripe types
+    await Database.updateSubscription(
+      subscription.id,
+      subscription.status,
+      new Date((subscription.current_period_end || subscription.currentPeriodEnd) * 1000)
+    );
+  } else if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object as any; // TODO: Fix Stripe types
+    await Database.deleteSubscription(subscription.id);
+  } else {
+    console.warn(`🤷‍♀️ Unhandled event type: ${event.type}`);
   }
+
+  return NextResponse.json({ received: true });
 }

@@ -3,13 +3,16 @@ import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
 import { Database, type User } from './database';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '7d';
 
 export interface AuthUser {
   id: string;
   email: string;
-  subscription_tier: 'free' | 'premium';
   total_minutes: number;
   current_streak: number;
   preferences: {
@@ -63,7 +66,6 @@ export class Auth {
     return {
       id: user.id,
       email: user.email,
-      subscription_tier: user.subscription_tier,
       total_minutes: user.total_minutes,
       current_streak: user.current_streak,
       preferences: user.preferences

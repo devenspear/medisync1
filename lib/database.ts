@@ -5,7 +5,7 @@ export interface User {
   id: string;
   email: string;
   password_hash: string;
-  subscription_tier: 'free' | 'premium';
+  stripe_customer_id?: string;
   total_minutes: number;
   current_streak: number;
   preferences: {
@@ -13,6 +13,17 @@ export interface User {
     preferred_voice: string;
     favorite_frequency: string;
   };
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  stripe_subscription_id: string;
+  plan_id: string;
+  status: 'active' | 'canceled' | 'incomplete' | 'past_due';
+  current_period_end: Date;
   created_at: Date;
   updated_at: Date;
 }
@@ -60,8 +71,8 @@ export class Database {
   // User operations
   static async createUser(email: string, passwordHash: string): Promise<User> {
     const result = await sql`
-      INSERT INTO users (email, password_hash, subscription_tier, total_minutes, current_streak, preferences)
-      VALUES (${email}, ${passwordHash}, 'free', 0, 0, ${JSON.stringify({
+      INSERT INTO users (email, password_hash, total_minutes, current_streak, preferences)
+      VALUES (${email}, ${passwordHash}, 0, 0, ${JSON.stringify({
         default_duration: 10,
         preferred_voice: 'female-1',
         favorite_frequency: 'alpha'
@@ -158,6 +169,53 @@ export class Database {
     return result.rows[0] as MeditationScript || null;
   }
 
+  // Subscription operations
+  static async createSubscription(
+    stripeSubscriptionId: string,
+    stripeCustomerId: string,
+    planId: string,
+    status: string,
+    currentPeriodEnd: Date
+  ): Promise<Subscription> {
+    const user = await sql`SELECT id FROM users WHERE stripe_customer_id = ${stripeCustomerId}`;
+    const userId = user.rows[0].id;
+
+    const result = await sql`
+      INSERT INTO subscriptions (user_id, stripe_subscription_id, plan_id, status, current_period_end)
+      VALUES (${userId}, ${stripeSubscriptionId}, ${planId}, ${status}, ${currentPeriodEnd.toUTCString()})
+      RETURNING *
+    `;
+    return result.rows[0] as Subscription;
+  }
+
+  static async updateSubscription(
+    stripeSubscriptionId: string,
+    status: string,
+    currentPeriodEnd: Date
+  ): Promise<Subscription> {
+    const result = await sql`
+      UPDATE subscriptions
+      SET status = ${status}, current_period_end = ${currentPeriodEnd.toUTCString()}, updated_at = NOW()
+      WHERE stripe_subscription_id = ${stripeSubscriptionId}
+      RETURNING *
+    `;
+    return result.rows[0] as Subscription;
+  }
+
+  static async deleteSubscription(stripeSubscriptionId: string): Promise<void> {
+    await sql`
+      DELETE FROM subscriptions
+      WHERE stripe_subscription_id = ${stripeSubscriptionId}
+    `;
+  }
+
+  static async findSubscriptionByUserId(userId: string): Promise<Subscription | null> {
+    const result = await sql`
+      SELECT * FROM subscriptions WHERE user_id = ${userId}
+    `;
+    return result.rows[0] as Subscription || null;
+  }
+
   // Database initialization
   static async initializeDatabase(): Promise<void> {
     try {
@@ -167,10 +225,24 @@ export class Database {
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           email TEXT UNIQUE NOT NULL,
           password_hash TEXT NOT NULL,
-          subscription_tier TEXT DEFAULT 'free' CHECK (subscription_tier IN ('free', 'premium')),
+          stripe_customer_id TEXT,
           total_minutes INTEGER DEFAULT 0,
           current_streak INTEGER DEFAULT 0,
           preferences JSONB DEFAULT '{"default_duration": 10, "preferred_voice": "female-1", "favorite_frequency": "alpha"}'::jsonb,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )
+      `;
+
+      // Create subscriptions table
+      await sql`
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          stripe_subscription_id TEXT UNIQUE NOT NULL,
+          plan_id TEXT NOT NULL,
+          status TEXT NOT NULL,
+          current_period_end TIMESTAMP WITH TIME ZONE NOT NULL,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         )

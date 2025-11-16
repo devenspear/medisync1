@@ -58,7 +58,6 @@ export interface UserPreferences {
 export interface User {
   id: string
   email: string
-  subscription_tier: 'free' | 'premium'
   total_minutes: number
   current_streak: number
   preferences: UserPreferences
@@ -95,11 +94,12 @@ export const useAppStore = create<AppState>()(
       setCurrentSession: (session) => set({ currentSession: session }),
 
       saveSession: (session) => {
-        const { savedSessions, user } = get()
-        const maxSessions = user?.subscription_tier === 'premium' ? Infinity : 10
+        const { savedSessions } = get()
+        // TODO: Add subscription-based limits later
+        const maxSessions = 50 // Generous limit for now
 
         if (savedSessions.length >= maxSessions) {
-          // Remove oldest session for free users
+          // Remove oldest session when at limit
           const updatedSessions = [...savedSessions.slice(1), session]
           set({ savedSessions: updatedSessions })
         } else {

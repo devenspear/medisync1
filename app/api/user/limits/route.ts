@@ -11,7 +11,9 @@ async function GET(request: NextRequest & { user: any }) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const isPremium = user.subscription_tier === 'premium';
+    // Check if user has an active subscription
+    const subscription = await Database.findSubscriptionByUserId(request.user.id);
+    const isPremium = subscription && subscription.status === 'active';
 
     // Get today's session count
     const today = new Date().toISOString().split('T')[0];
@@ -42,7 +44,7 @@ async function GET(request: NextRequest & { user: any }) {
     const usage = {
       daily_sessions_used: todaySessions,
       saved_sessions_used: savedSessionsCount,
-      subscription_tier: user.subscription_tier
+      subscription_status: subscription ? subscription.status : 'none'
     };
 
     // Check if user has hit limits
@@ -78,7 +80,9 @@ async function POST(request: NextRequest & { user: any }) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const isPremium = user.subscription_tier === 'premium';
+    // Check if user has an active subscription
+    const subscription = await Database.findSubscriptionByUserId(request.user.id);
+    const isPremium = subscription && subscription.status === 'active';
 
     // Get today's session count
     const today = new Date().toISOString().split('T')[0];
