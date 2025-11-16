@@ -9,7 +9,7 @@ import type { PrimaryTheme, AtmosphericElement, SoundscapeJourney } from '@/lib/
 import { AppleToggle, AppleCard, AppleProgress, ApplePillButton } from './AppleUI'
 
 const VOICES = [
-  { id: 'female-1', name: 'Kelli', description: 'Warm & comforting meditation voice', icon: '🎙️' },
+  { id: 'female-1', name: 'Kelli-2', description: '50-year-old female, extremely pleasing and comforting for deep guided meditation', icon: '🎙️' },
   { id: 'female-2', name: 'Sarah', description: 'Professional & reassuring', icon: '🎙️' },
   { id: 'male-1', name: 'Thomas', description: 'Soft & subdued for meditations', icon: '🎙️' },
   { id: 'male-2', name: 'George', description: 'Warm British resonance', icon: '🎙️' },
